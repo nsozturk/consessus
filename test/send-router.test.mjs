@@ -77,3 +77,16 @@ test("a missing session says which lists could not be read, and points an OpenCo
   assert.throws(() => resolveTarget("ses_abcdef12", sessions, []), /OpenCode desktop app/);
   assert.throws(() => resolveTarget("codex:zzzzzzzz", sessions, []), error => !/could not be listed|OpenCode desktop/.test(error.message));
 });
+
+test("a Claude target reports busy from the session list, and a busy one is not read", async () => {
+  const { defaultTransports } = await import("../src/send-router.mjs");
+  const seen = [];
+  const transports = defaultTransports({ sendClaude: async input => { seen.push(input); return { msgId: "m-1", receipt: "unconfirmed", via: "registered-peer", note: "busy note" }; } });
+  const list = status => async () => ({ sessions: [{ app: "claude", id: "abcdef123456", path: "/work/p", status }], unavailable: [] });
+  const busy = await sendToSession({ to: "claude:abcdef123456", message: "m", fromMode: "bypass", read: true, list: list("busy"), transports });
+  assert.deepEqual([busy.status, busy.receipt, busy.busy, busy.via, busy.note], ["sent", "unconfirmed", true, "registered-peer", "busy note"]);
+  assert.equal(busy.reply.status, "not-read");
+  assert.deepEqual([seen[0].status, seen[0].fromMode, seen[0].target], ["busy", "bypass", "abcdef123456"]);
+  const idle = await sendToSession({ to: "claude:abcdef123456", message: "m", list: list("idle"), transports });
+  assert.equal(idle.busy, false);
+});

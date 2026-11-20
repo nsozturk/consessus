@@ -24,7 +24,7 @@ export const NEEDS_MODE = "This shell is not inside a Claude session. Claude acc
 
 // Sends to a Claude session and says what its own record shows. Outside a Claude session the sender is first
 // registered as a peer for the length of the send, because a bare frame from there is held or dropped without a word to the sender.
-export async function sendToClaude({ target, message, fromName = "consessus", fromMode, fromAddress, fromSessionId, priority, raw,
+export async function sendToClaude({ target, message, fromName = "consessus", fromMode, fromAddress, fromSessionId, priority, raw, status,
   waitMs = 4000, inside = insideClaudeSession, resolve = resolveTargetSession, send = sendMessageToSession,
   register = startPeerAgentDaemon, mark = claudeTranscriptMark, confirm = confirmClaudeDelivery,
   hasRecord = session => { try { return fs.existsSync(claudeTranscript(session)); } catch { return false; } } } = {}) {
@@ -51,7 +51,7 @@ export async function sendToClaude({ target, message, fromName = "consessus", fr
     const receipt = session && offset !== undefined ? await confirm({ ...session, msgId: sent.msgId, offset, waitMs }) : "unknown";
     const note = receipt === "recorded" ? undefined
       : receipt === "unknown" ? "This target keeps no record Consessus can read (a listener, or a socket path), so delivery cannot be confirmed."
-      : resolved.status === "busy" ? "The session is busy: it writes the message down when its current step ends, so it is not confirmed yet."
+      : (status ?? resolved.status) === "busy" ? "The session is busy: it writes the message down when its current step ends, so it is not confirmed yet."
       : "The session has not recorded the message. It may be held for approval in the Claude app (the sender's mode differs from the session's), or the session does not accept peer messages.";
     return { msgId: sent.msgId, target: sent.target ?? resolved, receipt, via: direct ? "direct" : "registered-peer", ...(note ? { note } : {}) };
   } finally { peer?.cleanup?.(); }

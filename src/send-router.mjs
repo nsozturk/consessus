@@ -34,9 +34,10 @@ export const defaultTransports = ({ openOpencode = openOpencodeDelivery, sendCla
   async claude(row, { message, fromName, fromMode }) {
     const session = { sessionId: row.id, cwd: row.path };
     // A socket write proves nothing. The session's own record does: "recorded" means Claude Code wrote our message down.
-    const sent = await sendClaude({ target: row.id, message, fromName, fromMode });
+    const sent = await sendClaude({ target: row.id, message, fromName, fromMode, status: row.status });
     // The reader finds our own message by its id, so a turn that was already running cannot be mistaken for the answer.
-    return { status: sent.receipt === "recorded" ? "delivered" : "sent", receipt: sent.receipt, busy: false, ...(sent.note ? { note: sent.note } : {}),
+    // A busy session takes the message into its running turn, so there is no turn of our own to read an answer from.
+    return { status: sent.receipt === "recorded" ? "delivered" : "sent", receipt: sent.receipt, busy: row.status === "busy", ...(sent.note ? { note: sent.note } : {}),
       ...(sent.via === "registered-peer" ? { via: sent.via } : {}),
       ...(row.path ? { readReply: ({ timeoutMs }) => readClaudeReply({ ...session, after: { msgId: sent.msgId }, ...(timeoutMs ? { timeoutMs } : {}) }) } : {}) };
   },
