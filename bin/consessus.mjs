@@ -33,7 +33,7 @@ import {
   openCodexRelay,
 } from "../src/index.mjs";
 
-const VERSION = "1.0.0";
+const VERSION = "1.0.1";
 
 // ANSI Colors
 const RESET = "\x1b[0m";
@@ -77,7 +77,12 @@ ${BOLD}OPTIONS:${RESET}
     --from-name <name>        Sender display name (default: "consessus")
     --to <app>:<session id>   Any app session from 'consessus sessions': claude:, codex:, antigravity: or opencode: plus the id or a unique prefix
     --read [--timeout <s>]    With an app:id target: wait for and print the reply (Antigravity, Codex, the OpenCode CLI service, Claude)
-    --from-mode <mode>        Sender policy: "prompting" or "bypass" (recommended)
+    --from-mode <mode>        The sender's own approval policy: "prompting" (it asks before acting) or "bypass" (it acts
+                              without permission prompts). Needed to send to a Claude session from outside a Claude
+                              session (another app's shell, a detached job, a sandbox) unless --from-address or
+                              --from-session is given; without it that send stops and sends nothing. Recommended otherwise.
+                              A send to a Claude session prints a receipt read from the session's own record: recorded,
+                              unconfirmed (not written down within 4 seconds) or unknown (a listener or a socket path)
     --from-address <uds:...>  Running listener address for replies and receipts
     --from-session <id>       Running listener session ID
     --priority <priority>     "next" (default) or "now"

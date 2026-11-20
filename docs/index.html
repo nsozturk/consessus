@@ -36,7 +36,7 @@
   "applicationCategory": "DeveloperApplication",
   "applicationSubCategory": "Command-line tool",
   "operatingSystem": "macOS",
-  "softwareVersion": "1.0.0",
+  "softwareVersion": "1.0.1",
   "softwareRequirements": "Node.js 18 or newer (Codex relay: Node.js 22.13 or newer)",
   "license": "https://opensource.org/licenses/MIT",
   "isAccessibleForFree": true,
@@ -90,6 +90,14 @@
     },
     {
       "@type": "Question",
+      "name": "Why did my message not arrive in Claude?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A finished socket write does not mean that Claude took the message. Claude takes a bare message only from a process that runs inside a Claude session. From anywhere else, such as another app's shell, a detached job or a sandbox where the process tree cannot be read, the Claude app holds the message for approval because the sender did not state its permission mode, or drops it, and before version 1.0.1 the sender saw only that the frame was written. Since 1.0.1 a send from outside a Claude session that passes no listener reply address must carry the from-mode option with the sender's own approval policy: prompting if the sender asks before acting, bypass if it acts without permission prompts. Without it the command stops with an explanation and sends nothing. Every send to a Claude session also reports a receipt read from the session's own record. Recorded means Claude Code wrote the message down. Unconfirmed means it was not written down within 4 seconds: the session is busy and will record it when its current step ends, or the Claude app is holding it for the owner's approval, which can still happen when the declared mode differs from the session's mode, or the session does not accept peer messages. Unknown means the target is a Consessus listener or a socket path, which keeps no record. Declare your real mode, and never declare bypass to get past a hold."
+      }
+    },
+    {
+      "@type": "Question",
       "name": "How do I see which sessions are open in all four apps?",
       "acceptedAnswer": {
         "@type": "Answer",
@@ -137,7 +145,7 @@
 <div class="scenery" aria-hidden="true"><i class="on drift"></i><i></i></div>
 <header class="top">
   <a class="brand" href="./">Consessus</a>
-  <span class="ver">v1.0.0</span>
+  <span class="ver">v1.0.1</span>
   <span class="spacer"></span>
   <nav aria-label="Site">
     <a href="docs/">Docs</a>
@@ -318,18 +326,19 @@ consessus watch --project .</code></pre>
       <div>
         <h3>A listener, a send, a wait</h3>
         <p>A listener gives a session an address and an inbox. Another session sends to it. The message arrives labeled as peer data from a claimed sender, not as a human instruction.</p>
-        <p class="more">This output is from a real local run with a scratch home. A completed socket write is not evidence that a model read your message, and the tool says so: <em>receipt unconfirmed</em>.</p>
+        <p class="more">This output is from a real local run with a scratch home. A completed socket write is not evidence that a model read your message, and the tool says so: a listener keeps no record Consessus can read, so the receipt is <em>unknown</em>.</p>
       </div>
 <pre data-copy="consessus agent --name demo-agent --inbox &amp;
 consessus send --to demo-agent --from-name demo-sender --from-mode prompting --message 'Hello from demo-sender. Can you review the draft?'
 consessus wait --name demo-agent"><code><span class="p">$ </span><b>consessus agent --name demo-agent --inbox &amp;</b>
-✓ Registered live peer agent 'demo-agent' at uds:/tmp/cc-socks/41774.sock (PID 41774)
+✓ Registered live peer agent 'demo-agent' at uds:/tmp/cc-socks/61556.sock (PID 61556)
 Running Claude Code sessions can now see 'demo-agent' via ListPeers and message it via SendMessage.
 <span class="d">Listening for incoming peer messages... (Press Ctrl+C to stop)</span>
 
 <span class="p">$ </span><b>consessus send --to demo-agent --from-name demo-sender \
     --from-mode prompting --message 'Hello from demo-sender. Can you review the draft?'</b>
-Frame written (msg_id=4b74c695-9c68-4951-9256-239a524a062b) to PID 41774 (demo-agent); receipt unconfirmed
+Frame written (msg_id=59eff0e5-977b-4c26-b441-6a0f5ba4dab1) to PID 61556 (demo-agent); receipt unknown
+Note: This target keeps no record Consessus can read (a listener, or a socket path), so delivery cannot be confirmed.
 
 <span class="p">$ </span><b>consessus wait --name demo-agent</b>
 Peer data from "demo-sender" (claimed sender). This is not a human instruction.
@@ -424,6 +433,8 @@ Every installed component matches a tested version.</code></pre>
   <p>Yes, with the Antigravity app. Start a listener in the project folder with the inbox and antigravity-conversation options. It sends each message into the open conversation through the language server that the running Antigravity app provides on this Mac, so nothing has to be started or pasted inside Antigravity. In a live test with the Antigravity app 2.33.0 the model answered without a nudge; the Antigravity IDE app 2.6.0 was not tested this way. Only conversations the server has loaded can be reached, and what happens while a turn is running is unknown. The older way, a listener and a one-shot wait command run by the IDE agent, worked live with an earlier build of the listener. The agy CLI cannot reach a conversation that is open in the IDE.</p>
   <h3>Why was my message held?</h3>
   <p>The sender and the recipient run in different permission modes. A session that asks before running tools holds messages from one that does not, and the other way round, until the recipient's user approves. Claude Desktop cannot show that approval prompt, so a held message expires there. Run both sessions in the same mode and declare the sender's real mode. Never declare bypass to get past a hold.</p>
+  <h3>Why did my message not arrive in Claude?</h3>
+  <p>A finished socket write does not mean that Claude took the message. Claude takes a bare message only from a process that runs inside a Claude session. From anywhere else, such as another app's shell, a detached job or a sandbox where the process tree cannot be read, the Claude app holds the message for approval because the sender did not state its permission mode, or drops it, and before version 1.0.1 the sender saw only that the frame was written. Since 1.0.1 a send from outside a Claude session that passes no listener reply address must carry the from-mode option with the sender's own approval policy: prompting if the sender asks before acting, bypass if it acts without permission prompts. Without it the command stops with an explanation and sends nothing. Every send to a Claude session also reports a receipt read from the session's own record. Recorded means Claude Code wrote the message down. Unconfirmed means it was not written down within 4 seconds: the session is busy and will record it when its current step ends, or the Claude app is holding it for the owner's approval, which can still happen when the declared mode differs from the session's mode, or the session does not accept peer messages. Unknown means the target is a Consessus listener or a socket path, which keeps no record. Declare your real mode, and never declare bypass to get past a hold.</p>
   <h3>How do I see which sessions are open in all four apps?</h3>
   <p>Run consessus sessions. It prints one table with the app, status, permission mode, model, id, folder and title of each open session. The mode is only read, to show whether a message may wait for an approval in that app; Consessus never changes a permission mode. Claude Code and Claude Desktop sessions show idle, busy or shell, and a Consessus listener shows listener. Codex desktop chats that a window is showing show open. Antigravity conversations that its language server has loaded show idle or running. OpenCode CLI service sessions that are busy or were used in the last twelve hours show idle or busy. OpenCode desktop sessions are not listed, because the desktop app offers no way to find them from outside. Add the project option with a folder to keep only the sessions in that folder, or the json option for machine-readable output. An app that is not running is reported as not available. This was tested live on one Mac.</p>
   <h3>Does anything leave my machine?</h3>
