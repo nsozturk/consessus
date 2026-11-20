@@ -19,7 +19,7 @@ import { listSessions, formatSessions } from "../src/sessions.mjs";
 import { readProfile } from "../src/member-profile.mjs";
 import { watchSessions, formatWatchEvent } from "../src/watch.mjs";
 import { sendToSession } from "../src/send-router.mjs";
-import { claudeTranscriptMark, confirmClaudeDelivery } from "../src/claude-replies.mjs";
+import { sendToClaude } from "../src/claude-send.mjs";
 import {
   listLiveSessions,
   resolveTargetSession,
@@ -314,7 +314,7 @@ async function handleSend(args) {
   if (/^(claude|codex|antigravity|opencode):/.test(String(to))) {
     const seconds = args.timeout === undefined ? undefined : Number(args.timeout);
     if (seconds !== undefined && !(seconds > 0)) throw new Error("--timeout takes a number of seconds");
-    const result = await sendToSession({ to: String(to), message: String(message), fromName: args["from-name"] || "consessus",
+    const result = await sendToSession({ to: String(to), message: String(message), fromName: args["from-name"] || "consessus", fromMode: args["from-mode"],
       read: args.read === true, timeoutMs: seconds === undefined ? undefined : seconds * 1000 });
     if (result.warning) console.error(`Note: ${result.warning}`);
     console.log(JSON.stringify(result, null, 2));
@@ -322,13 +322,7 @@ async function handleSend(args) {
     return;
   }
 
-  // Mark the session's record before sending, so the receipt can say whether the message was written down.
-  let mark;
-  try {
-    const target = await resolveTargetSession(to);
-    if (target?.sessionId && target.cwd) mark = { session: { sessionId: target.sessionId, cwd: target.cwd }, offset: claudeTranscriptMark({ sessionId: target.sessionId, cwd: target.cwd }) };
-  } catch {}
-  const res = await sendMessageToSession({
+  const res = await sendToClaude({
     target: to,
     message,
     fromAddress: args["from-address"],
@@ -338,17 +332,10 @@ async function handleSend(args) {
     priority: args.priority || "next",
     raw: Boolean(args.raw),
   });
-
-  const receipt = mark ? await confirmClaudeDelivery({ ...mark.session, msgId: res.msgId, offset: mark.offset }) : "unknown";
   console.log(
-    `Frame written (msg_id=${res.msgId}) to PID ${res.target.pid} (${res.target.name || res.target.messagingSocketPath}); receipt ${receipt}`
+    `Frame written (msg_id=${res.msgId}) to PID ${res.target.pid} (${res.target.name || res.target.messagingSocketPath}); receipt ${res.receipt}${res.via === "registered-peer" ? " (sent as a registered peer)" : ""}`
   );
-  if (receipt === "unconfirmed") {
-    console.error("Note: the session has not recorded the message. It may be held for approval there, or that process is a listener or does not accept peer messages.");
-    process.exitCode = 3;
-  } else if (receipt === "unknown") {
-    console.error("Note: this target keeps no record Consessus can read (a listener, or a socket path), so delivery cannot be confirmed.");
-  }
+  if (res.note) console.error(`Note: ${res.note}`);
 }
 
 async function handleRename(args) {

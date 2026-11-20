@@ -7,7 +7,8 @@ import { startCodexDesktop, steerCodexDesktop } from "./codex-desktop.mjs";
 import { connectAntigravity, openAntigravityDelivery, readAntigravityReply } from "./antigravity-delivery.mjs";
 import { openOpencodeDelivery } from "./opencode-delivery.mjs";
 import { readCodexReply } from "./codex-replies.mjs";
-import { claudeTranscriptMark, confirmClaudeDelivery, readClaudeReply } from "./claude-replies.mjs";
+import { readClaudeReply } from "./claude-replies.mjs";
+import { sendToClaude } from "./claude-send.mjs";
 
 // One address space for the four apps: a session id (or a unique prefix of it), optionally "app:id".
 export function resolveTarget(query, sessions, unavailable = []) {
@@ -29,18 +30,15 @@ export function resolveTarget(query, sessions, unavailable = []) {
   throw new Error(`${found.length} sessions match that id: ${found.map(row => `${row.app}:${row.id}`).join(", ")}. Give more of it.`);
 }
 
-export const defaultTransports = ({ openOpencode = openOpencodeDelivery } = {}) => ({
-  async claude(row, { message, fromName }) {
+export const defaultTransports = ({ openOpencode = openOpencodeDelivery, sendClaude = sendToClaude } = {}) => ({
+  async claude(row, { message, fromName, fromMode }) {
     const session = { sessionId: row.id, cwd: row.path };
-    let offset;
-    try { offset = claudeTranscriptMark(session); } catch {}
-    const sent = await sendMessageToSession({ target: row.id, message, fromName });
     // A socket write proves nothing. The session's own record does: "recorded" means Claude Code wrote our message down.
-    const receipt = offset === undefined ? "unknown" : await confirmClaudeDelivery({ ...session, msgId: sent.msgId, offset });
+    const sent = await sendClaude({ target: row.id, message, fromName, fromMode });
     // The reader finds our own message by its id, so a turn that was already running cannot be mistaken for the answer.
-    return { status: receipt === "recorded" ? "delivered" : "sent", receipt, busy: false,
-      ...(receipt === "recorded" ? {} : { note: "The session has not recorded the message yet: it may be held for approval there, or the session does not accept peer messages." }),
-      ...(offset === undefined ? {} : { readReply: ({ timeoutMs }) => readClaudeReply({ ...session, after: { msgId: sent.msgId, offset }, ...(timeoutMs ? { timeoutMs } : {}) }) }) };
+    return { status: sent.receipt === "recorded" ? "delivered" : "sent", receipt: sent.receipt, busy: false, ...(sent.note ? { note: sent.note } : {}),
+      ...(sent.via === "registered-peer" ? { via: sent.via } : {}),
+      ...(row.path ? { readReply: ({ timeoutMs }) => readClaudeReply({ ...session, after: { msgId: sent.msgId }, ...(timeoutMs ? { timeoutMs } : {}) }) } : {}) };
   },
   // A running turn takes the message as an addition; an idle chat gets a new turn.
   async codex(row, { text }) {
@@ -68,7 +66,7 @@ export const defaultTransports = ({ openOpencode = openOpencodeDelivery } = {}) 
   },
 });
 
-export async function sendToSession({ to, message, project, fromName = "consessus", read = false, timeoutMs,
+export async function sendToSession({ to, message, project, fromName = "consessus", fromMode, read = false, timeoutMs,
   list = listSessions, transports = defaultTransports() } = {}) {
   if (typeof message !== "string" || !message.trim()) throw new Error("A message is required");
   const listed = await list({ project });
@@ -76,7 +74,7 @@ export async function sendToSession({ to, message, project, fromName = "consessu
   const transport = transports[row.app];
   if (typeof transport !== "function") throw new Error(`${row.app} sessions cannot be reached by this version`);
   const frame = { type: "user", from_name: fromName, message: { content: message } };
-  const sent = await transport(row, { message, fromName, frame, text: formatPeerData(frame) });
+  const sent = await transport(row, { message, fromName, fromMode, frame, text: formatPeerData(frame) });
   const { readReply, ...outcome } = sent ?? {};
   const result = { app: row.app, id: row.id, path: row.path ?? null, ...outcome };
   // The mode is only reported. Changing it is the owner's own action in that app.
