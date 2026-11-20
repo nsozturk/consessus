@@ -16,9 +16,9 @@ test("finds one session by full id, unique prefix or app:id and refuses anything
   assert.equal(resolveTarget("aaaa1111", rows).app, "claude");
   assert.equal(resolveTarget("opencode:ses_dddd4444", rows).id, "ses_dddd4444");
   assert.throws(() => resolveTarget("cccc3333", rows), /2 sessions match/);
-  assert.throws(() => resolveTarget("claude:bbbb2222", rows), /No open session/);
+  assert.throws(() => resolveTarget("claude:bbbb2222", rows), /No listed session/);
   assert.throws(() => resolveTarget("aaa", rows), /at least 6/);
-  assert.throws(() => resolveTarget("zzzzzzzz", rows), /No open session/);
+  assert.throws(() => resolveTarget("zzzzzzzz", rows), /No listed session/);
   assert.throws(() => resolveTarget("", rows), /session id/);
 });
 
@@ -64,4 +64,16 @@ test("reads a reply only when asked, and never from a conversation that was busy
     transports: { claude: async () => ({ status: "failed", reason: "HTTP 500", readReply: async () => { throw new Error("must not be called"); } }) } });
   assert.equal(failed.status, "failed");
   assert.equal(failed.reply, undefined);
+});
+
+test("a missing session says which lists could not be read, and points an OpenCode desktop session to its listener", () => {
+  const sessions = [{ app: "codex", id: "thread-000001" }];
+  const unavailable = [{ app: "claude", reason: "spawn EPERM\u001b[2J" }, { app: "antigravity", reason: "down" }];
+  assert.throws(() => resolveTarget("claude:abcdef12", sessions, unavailable),
+    error => /No listed session matches/.test(error.message) && /The claude sessions could not be listed \(spawn EPERM/.test(error.message)
+      && !/antigravity/.test(error.message) && !/\u001b/.test(error.message));
+  assert.throws(() => resolveTarget("abcdef12", sessions, unavailable), /claude sessions could not be listed.*antigravity sessions could not be listed/);
+  assert.throws(() => resolveTarget("opencode:ses_abcdef12", sessions, []), /OpenCode desktop app is not listed.*consessus agent --name <name> --inbox --opencode-session auto/);
+  assert.throws(() => resolveTarget("ses_abcdef12", sessions, []), /OpenCode desktop app/);
+  assert.throws(() => resolveTarget("codex:zzzzzzzz", sessions, []), error => !/could not be listed|OpenCode desktop/.test(error.message));
 });

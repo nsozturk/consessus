@@ -24,7 +24,10 @@ async function processCommands(pids) {
 // It is a mailbox for another app, not a model, and is shown as such.
 export async function claudeSource({ list = listLiveSessions, commands = processCommands } = {}) {
   const sessions = await list();
-  const running = sessions.length ? await commands(sessions.map(session => session.pid)) : new Map();
+  // The process list only tells a Consessus listener from a model. Where it cannot be read (a sandbox that forbids
+  // running `ps`), the sessions are still listed, with the status their own record gives.
+  let running = new Map();
+  try { if (sessions.length) running = await commands(sessions.map(session => session.pid)); } catch {}
   return sessions.map(session => ({
     id: session.sessionId, path: session.cwd ?? null,
     status: /^(?:\S*\/)?node\s+(?:\S*\/)?(?:consessus|claude-peer|cc-peer-bridge)(?:\.mjs)?\s+(?:agent|room)\b/.test(running.get(session.pid) ?? "") ? "listener" : session.status ?? "unknown",

@@ -7,10 +7,10 @@ import { startCodexDesktop, steerCodexDesktop } from "./codex-desktop.mjs";
 import { connectAntigravity, openAntigravityDelivery, readAntigravityReply } from "./antigravity-delivery.mjs";
 import { openOpencodeDelivery } from "./opencode-delivery.mjs";
 import { readCodexReply } from "./codex-replies.mjs";
-import { claudeTranscriptMark, readClaudeReply } from "./claude-replies.mjs";
+import { claudeTranscriptMark, confirmClaudeDelivery, readClaudeReply } from "./claude-replies.mjs";
 
 // One address space for the four apps: a session id (or a unique prefix of it), optionally "app:id".
-export function resolveTarget(query, sessions) {
+export function resolveTarget(query, sessions, unavailable = []) {
   if (typeof query !== "string" || !query.trim()) throw new Error("A session id is required. Run `consessus sessions` to see them.");
   const split = /^(claude|codex|antigravity|opencode):(.+)$/.exec(query.trim());
   const app = split?.[1], id = split ? split[2] : query.trim();
@@ -19,7 +19,13 @@ export function resolveTarget(query, sessions) {
   const exact = pool.filter(row => row.id === id);
   const found = exact.length ? exact : pool.filter(row => typeof row.id === "string" && row.id.startsWith(id));
   if (found.length === 1) return found[0];
-  if (!found.length) throw new Error("No open session matches that id. Run `consessus sessions` to see them.");
+  if (!found.length) {
+    // "Not found" is only true for an app whose list was read. Say which lists were not, and why.
+    const unread = unavailable.filter(entry => !app || entry.app === app);
+    const hints = unread.map(entry => `The ${entry.app} sessions could not be listed (${String(entry.reason).replace(/[\x00-\x1f\x7f-\x9f]/g, " ").slice(0, 120)}), so the session may still be open.`);
+    if (app === "opencode" || /^ses_/.test(id)) hints.push("A session of the OpenCode desktop app is not listed: start a listener inside it with `consessus agent --name <name> --inbox --opencode-session auto` and send to that listener.");
+    throw new Error(["No listed session matches that id. Run `consessus sessions` to see them.", ...hints].join(" "));
+  }
   throw new Error(`${found.length} sessions match that id: ${found.map(row => `${row.app}:${row.id}`).join(", ")}. Give more of it.`);
 }
 
@@ -29,8 +35,11 @@ export const defaultTransports = ({ openOpencode = openOpencodeDelivery } = {}) 
     let offset;
     try { offset = claudeTranscriptMark(session); } catch {}
     const sent = await sendMessageToSession({ target: row.id, message, fromName });
+    // A socket write proves nothing. The session's own record does: "recorded" means Claude Code wrote our message down.
+    const receipt = offset === undefined ? "unknown" : await confirmClaudeDelivery({ ...session, msgId: sent.msgId, offset });
     // The reader finds our own message by its id, so a turn that was already running cannot be mistaken for the answer.
-    return { status: sent.receipt === "confirmed" ? "delivered" : "sent", receipt: sent.receipt, busy: false,
+    return { status: receipt === "recorded" ? "delivered" : "sent", receipt, busy: false,
+      ...(receipt === "recorded" ? {} : { note: "The session has not recorded the message yet: it may be held for approval there, or the session does not accept peer messages." }),
       ...(offset === undefined ? {} : { readReply: ({ timeoutMs }) => readClaudeReply({ ...session, after: { msgId: sent.msgId, offset }, ...(timeoutMs ? { timeoutMs } : {}) }) }) };
   },
   // A running turn takes the message as an addition; an idle chat gets a new turn.
@@ -62,7 +71,8 @@ export const defaultTransports = ({ openOpencode = openOpencodeDelivery } = {}) 
 export async function sendToSession({ to, message, project, fromName = "consessus", read = false, timeoutMs,
   list = listSessions, transports = defaultTransports() } = {}) {
   if (typeof message !== "string" || !message.trim()) throw new Error("A message is required");
-  const row = resolveTarget(to, (await list({ project })).sessions);
+  const listed = await list({ project });
+  const row = resolveTarget(to, listed.sessions, listed.unavailable ?? []);
   const transport = transports[row.app];
   if (typeof transport !== "function") throw new Error(`${row.app} sessions cannot be reached by this version`);
   const frame = { type: "user", from_name: fromName, message: { content: message } };

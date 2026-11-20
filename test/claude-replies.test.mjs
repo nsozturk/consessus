@@ -115,3 +115,29 @@ test("the wait stops when its signal aborts, and bad arguments are refused befor
   await assert.rejects(readClaudeReply({ sessionId: SESSION, cwd: CWD, home: f.home, after: {} }), /after\.msgId/);
   await assert.rejects(f.read("ours", { pollMs: 0 }), /positive/);
 });
+
+test("delivery is confirmed only by the session's own record of our message id", async t => {
+  const { confirmClaudeDelivery } = await import("../src/claude-replies.mjs");
+  const f = fixture(t);
+  const check = (msgId, extra = {}) => confirmClaudeDelivery({ sessionId: SESSION, cwd: CWD, home: f.home, msgId, waitMs: 80, pollMs: 5, ...extra });
+  // No transcript at all (a listener, or a session that keeps none): nothing can be said.
+  assert.equal(await check("ours"), "unknown");
+  f.write(f.rows.peer("other"));
+  assert.equal(await check("ours"), "unconfirmed");
+  // Idle session: our message starts a turn and is its user line.
+  f.write(f.rows.peer("ours"));
+  assert.equal(await check("ours"), "recorded");
+  // Busy session: the message is attached to the running turn instead.
+  f.write({ sessionId: SESSION, type: "attachment", attachment: { type: "queued_command", origin: { msg_id: "mid-turn" } } });
+  assert.equal(await check("mid-turn"), "recorded");
+  // The id inside ordinary text, or in another session's line, proves nothing.
+  f.write(f.rows.say("m1", f.text("someone quoted late-1")), { ...f.rows.peer("late-1"), sessionId: "99999999-2222-4333-8444-555555555555" });
+  assert.equal(await check("late-1"), "unconfirmed");
+  // It waits for a record that is written a moment later, and only looks after the mark.
+  const offset = fs.statSync(f.file).size;
+  assert.equal(await check("ours", { offset }), "unconfirmed");
+  const pending = check("later", { waitMs: 400 });
+  setTimeout(() => f.write(f.rows.peer("later")), 40);
+  assert.equal(await pending, "recorded");
+  assert.equal(await confirmClaudeDelivery({ sessionId: "nope", cwd: CWD, home: f.home, msgId: "x" }), "unknown");
+});

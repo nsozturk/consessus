@@ -177,7 +177,7 @@ test("legacy CLI send without mode still writes an omitted policy attribute", as
     child.once("error", reject); child.once("exit", resolve);
   });
   assert.equal(code, 0, stderr);
-  assert.match(stdout, /receipt unconfirmed/);
+  assert.match(stdout, /receipt unknown/);
   assert.equal(f.frames.length, 1);
   assert.doesNotMatch(f.frames[0].message.content, /from-mode=/);
 });

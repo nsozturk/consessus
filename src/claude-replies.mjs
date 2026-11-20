@@ -94,3 +94,30 @@ export async function readClaudeReply({ sessionId, cwd, after, timeoutMs = 120_0
     if (!step.lines.length) await sleep(Math.min(pollMs, remaining), undefined, { signal });
   }
 }
+
+// Was our message recorded by the session? Claude Code writes an incoming peer message into the transcript: as the
+// user line of a new turn when the session was idle, or as an attachment when it arrived during a turn. A message
+// that is held for approval there, refused or lost is not written. Only the id is looked for, never the text.
+export async function confirmClaudeDelivery({ sessionId, cwd, msgId, offset = 0, waitMs = 4000, pollMs = 250, home = claudeHome(), uid = process.getuid() } = {}) {
+  let file;
+  try { file = claudeTranscript({ sessionId, cwd, home }); } catch { return "unknown"; }
+  if (typeof msgId !== "string" || !msgId) return "unknown";
+  const deadline = performance.now() + waitMs;
+  let from = Number.isSafeInteger(offset) && offset > 0 ? offset : 0;
+  for (;;) {
+    const step = readFrom(file, from, uid);
+    if (!step) return "unknown";
+    from = step.offset;
+    for (const line of step.lines) {
+      if (!line.includes(msgId)) continue;
+      let row;
+      try { row = JSON.parse(line); } catch { continue; }
+      if (row?.sessionId !== sessionId) continue;
+      if (row.origin?.msg_id === msgId) return "recorded";
+      if (row.type === "attachment" && JSON.stringify(row.attachment ?? "").includes(msgId)) return "recorded";
+    }
+    const remaining = deadline - performance.now();
+    if (remaining <= 0) return "unconfirmed";
+    if (!step.lines.length) await sleep(Math.min(pollMs, remaining));
+  }
+}

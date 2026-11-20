@@ -19,6 +19,7 @@ import { listSessions, formatSessions } from "../src/sessions.mjs";
 import { readProfile } from "../src/member-profile.mjs";
 import { watchSessions, formatWatchEvent } from "../src/watch.mjs";
 import { sendToSession } from "../src/send-router.mjs";
+import { claudeTranscriptMark, confirmClaudeDelivery } from "../src/claude-replies.mjs";
 import {
   listLiveSessions,
   resolveTargetSession,
@@ -321,6 +322,12 @@ async function handleSend(args) {
     return;
   }
 
+  // Mark the session's record before sending, so the receipt can say whether the message was written down.
+  let mark;
+  try {
+    const target = await resolveTargetSession(to);
+    if (target?.sessionId && target.cwd) mark = { session: { sessionId: target.sessionId, cwd: target.cwd }, offset: claudeTranscriptMark({ sessionId: target.sessionId, cwd: target.cwd }) };
+  } catch {}
   const res = await sendMessageToSession({
     target: to,
     message,
@@ -332,9 +339,16 @@ async function handleSend(args) {
     raw: Boolean(args.raw),
   });
 
+  const receipt = mark ? await confirmClaudeDelivery({ ...mark.session, msgId: res.msgId, offset: mark.offset }) : "unknown";
   console.log(
-    `Frame written (msg_id=${res.msgId}) to PID ${res.target.pid} (${res.target.name || res.target.messagingSocketPath}); receipt ${res.receipt}`
+    `Frame written (msg_id=${res.msgId}) to PID ${res.target.pid} (${res.target.name || res.target.messagingSocketPath}); receipt ${receipt}`
   );
+  if (receipt === "unconfirmed") {
+    console.error("Note: the session has not recorded the message. It may be held for approval there, or that process is a listener or does not accept peer messages.");
+    process.exitCode = 3;
+  } else if (receipt === "unknown") {
+    console.error("Note: this target keeps no record Consessus can read (a listener, or a socket path), so delivery cannot be confirmed.");
+  }
 }
 
 async function handleRename(args) {

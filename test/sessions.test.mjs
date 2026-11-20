@@ -445,3 +445,9 @@ test("OpenCode and Antigravity lists hand over their own record of the model onl
       { model: "glm-5.3", provider: "zai-coding-plan", effort: "high" }, { model: undefined, provider: undefined, effort: undefined }]);
   } finally { await oc.server.close(); }
 });
+
+test("Claude sessions are still listed when the process list cannot be read (a sandbox that forbids ps)", async () => {
+  const list = async () => [{ sessionId: "s-1", pid: 4242, cwd: "/work/p", status: "idle", name: "one" }];
+  const rows = await claudeSource({ list, commands: async () => { const error = new Error("spawn EPERM"); error.code = "EPERM"; throw error; } });
+  assert.deepEqual(rows.map(row => [row.id, row.status, row.path]), [["s-1", "idle", "/work/p"]]);
+});
