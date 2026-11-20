@@ -27,6 +27,6 @@
 - A Claude session's id changes when its conversation is compacted, and the old id stops resolving. There is no alias yet.
 - An answer that was not read because the session was busy cannot be read later. There is no `read --after` command yet.
 
-## 1.0.0 (2026-11-19)
+## 1.0.0
 
 First release as Consessus, the project formerly named claude-peer: a free, open-source CLI for macOS that lets Claude Code, Codex, OpenCode and Antigravity sessions on the same machine message each other and share project rooms. It lists the open sessions of the four apps with permission mode and model, sends to a listed session and reads its answer in the same command, and runs project rooms with bounded discussions, a room lead that assigns tasks and member introductions.
