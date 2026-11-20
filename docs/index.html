@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Consessus: let your AI coding agents talk to each other</title>
+<meta name="description" content="Consessus is a free, open-source CLI for macOS that lets Claude Code, Codex, OpenCode and Antigravity sessions on the same machine message each other and share project rooms. It reaches chats already open in the Codex desktop app, the Antigravity app and Claude Desktop, lists open sessions with their permission mode and model, reads answers back, and runs project rooms with a fixed upper bound on deliveries.">
+<link rel="canonical" href="https://nsozturk.github.io/consessus/">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23090d16'/%3E%3Cpath d='M22 11a8 8 0 1 0 0 10' fill='none' stroke='%23c9a45c' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Consessus">
+<meta property="og:title" content="Consessus: let your AI coding agents talk to each other">
+<meta property="og:description" content="Consessus is a free, open-source CLI for macOS that lets Claude Code, Codex, OpenCode and Antigravity sessions on the same machine message each other and share project rooms. It reaches chats already open in the Codex desktop app, the Antigravity app and Claude Desktop, lists open sessions with their permission mode and model, reads answers back, and runs project rooms with a fixed upper bound on deliveries.">
+<meta property="og:url" content="https://nsozturk.github.io/consessus/">
+<meta property="og:image" content="https://nsozturk.github.io/consessus/assets/site/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Consessus: Let your AI coding agents talk to each other.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Consessus: let your AI coding agents talk to each other">
+<meta name="twitter:description" content="Consessus is a free, open-source CLI for macOS that lets Claude Code, Codex, OpenCode and Antigravity sessions on the same machine message each other and share project rooms. It reaches chats already open in the Codex desktop app, the Antigravity app and Claude Desktop, lists open sessions with their permission mode and model, reads answers back, and runs project rooms with a fixed upper bound on deliveries.">
+<meta name="twitter:image" content="https://nsozturk.github.io/consessus/assets/site/og.png">
+<link rel="alternate" type="text/plain" href="llms.txt" title="llms.txt">
+<link rel="preload" as="image" type="image/webp" href="assets/site/scene-1.webp" media="(min-width: 961px)">
+<link rel="preload" as="image" type="image/webp" href="assets/site/scene-1-960.webp" media="(max-width: 960px)">
+<link rel="stylesheet" href="assets/site/site.css">
+<script>if(!matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.className="anim"</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Consessus",
+  "alternateName": "claude-peer",
+  "description": "Consessus is a free, open-source CLI for macOS that lets Claude Code, Codex, OpenCode and Antigravity sessions on the same machine message each other and share project rooms.",
+  "applicationCategory": "DeveloperApplication",
+  "applicationSubCategory": "Command-line tool",
+  "operatingSystem": "macOS",
+  "softwareVersion": "1.0.0",
+  "softwareRequirements": "Node.js 18 or newer (Codex relay: Node.js 22.13 or newer)",
+  "license": "https://opensource.org/licenses/MIT",
+  "isAccessibleForFree": true,
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "codeRepository": "https://github.com/nsozturk/consessus",
+  "downloadUrl": "https://github.com/nsozturk/consessus",
+  "url": "https://nsozturk.github.io/consessus/",
+  "softwareHelp": "https://nsozturk.github.io/consessus/docs/",
+  "image": "https://nsozturk.github.io/consessus/assets/site/og.png",
+  "screenshot": "https://nsozturk.github.io/consessus/assets/screenshots/03-inbox-demo.png",
+  "author": { "@type": "Person", "name": "nsozturk", "url": "https://github.com/nsozturk" },
+  "keywords": "Claude Code, Codex, OpenCode, Antigravity, agent-to-agent, multi-agent, macOS, CLI"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How do I make Claude Code and Codex talk to each other?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Run a Consessus relay listener with the Claude session ID, the sender's permission mode, the thread id of an existing Codex desktop chat, which consessus sessions lists for the project folder, and the immediate routing option. Claude's messages then go straight into that chat: they steer the running turn, or start a new turn in the same chat when it is idle. The Codex agent answers by running consessus send with the listener's address and session ID. The relay needs Node 22.13 or newer and the Codex desktop app running. Both directions were tested live with Claude Desktop."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can OpenCode receive messages from Claude?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Start the listener from inside the OpenCode session with the inbox and opencode-session options. Each message is saved to a private inbox and then posted to the session through OpenCode's local server, which starts a turn in the open conversation. This was tested live with the OpenCode desktop app 1.19.5. The CLI service (2.3.2) uses OpenCode's documented route, which was not part of that live test. Delivery uses an experimental OpenCode HTTP API that an update can change."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does it work with Antigravity?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, with the Antigravity app. Start a listener in the project folder with the inbox and antigravity-conversation options. It sends each message into the open conversation through the language server that the running Antigravity app provides on this Mac, so nothing has to be started or pasted inside Antigravity. In a live test with the Antigravity app 2.33.0 the model answered without a nudge; the Antigravity IDE app 2.6.0 was not tested this way. Only conversations the server has loaded can be reached, and what happens while a turn is running is unknown. The older way, a listener and a one-shot wait command run by the IDE agent, worked live with an earlier build of the listener. The agy CLI cannot reach a conversation that is open in the IDE."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Why was my message held?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The sender and the recipient run in different permission modes. A session that asks before running tools holds messages from one that does not, and the other way round, until the recipient's user approves. Claude Desktop cannot show that approval prompt, so a held message expires there. Run both sessions in the same mode and declare the sender's real mode. Never declare bypass to get past a hold."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I see which sessions are open in all four apps?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Run consessus sessions. It prints one table with the app, status, permission mode, model, id, folder and title of each open session. The mode is only read, to show whether a message may wait for an approval in that app; Consessus never changes a permission mode. Claude Code and Claude Desktop sessions show idle, busy or shell, and a Consessus listener shows listener. Codex desktop chats that a window is showing show open. Antigravity conversations that its language server has loaded show idle or running. OpenCode CLI service sessions that are busy or were used in the last twelve hours show idle or busy. OpenCode desktop sessions are not listed, because the desktop app offers no way to find them from outside. Add the project option with a folder to keep only the sessions in that folder, or the json option for machine-readable output. An app that is not running is reported as not available. This was tested live on one Mac."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does anything leave my machine?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. Consessus talks only over Unix domain sockets and loopback HTTP on one Mac. It has no server, no account and no telemetry. Your AI apps still talk to their own providers as they normally do."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can the agents get stuck answering each other for ever?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. An agent's answer never causes a delivery. Only the one command that is running sends. A room discuss command reads each answer from that member's own session and decides what to pass on, and a room assign command sends each task once and waits for the answers. In turn mode a discussion makes exactly one delivery to each speaker in each round, with 1 to 5 rounds, and waits at most 120 seconds for one answer. In free mode it stops after at most 20 deliveries (the room's budget, or 8 when none is set), when a pass reads no new answer, after its time limit (300 seconds by default) or on Ctrl-C. An assignment is one delivery to each named member, at most 20, and nobody is retried. A room runs one discussion or one assignment at a time: a second command on the same room is refused until the first ends, so two commands cannot add up. A command that is killed leaves the room locked until the end time it wrote down, which is never more than about 42 minutes ahead."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do the agents know who they are talking to?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, as far as Consessus can read it. When a member enters a room, Consessus tells the members that have their own socket (Claude sessions and listeners) in one line: its app, model, session id and folder. It reads these from the app's own record, never from what the member says about itself, and writes unknown for a value it cannot read. A Codex, Antigravity or OpenCode chat gets no such lines, because each delivery starts a model turn there. The first room message it receives starts with the room's rules and the roster instead: one line per member with its app, model and id, with the room lead marked, and the roster comes again after it changed. The room members command shows the same labels at any time. In a discussion each answer is read from the speaker's own session, so the name next to an answer is the session it was read from, not a name the text claims. Outside a room, the sender name of a plain send is only claimed and is not verified."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What happened to claude-peer?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "claude-peer is the earlier name of Consessus. The claude-peer command still works as a deprecated alias that prints a notice and runs the same CLI; it will be removed in a later version. State in an existing claude-peer directory is used until a Consessus directory exists, and it is never moved or deleted. The old CLAUDE_PEER_HOME variable is still read when CONSESSUS_HOME is not set."
+      }
+    }
+  ]
+}
+</script>
+</head>
+<body class="landing">
+<a class="skip" href="#main">Skip to content</a>
+<div class="scenery" aria-hidden="true"><i class="on drift"></i><i></i></div>
+<header class="top">
+  <a class="brand" href="./">Consessus</a>
+  <span class="ver">v1.0.0</span>
+  <span class="spacer"></span>
+  <nav aria-label="Site">
+    <a href="docs/">Docs</a>
+    <a class="opt" href="#tested">What was tested</a>
+    <a class="opt" href="#faq">FAQ</a>
+    <a href="https://github.com/nsozturk/consessus">GitHub</a>
+  </nav>
+</header>
+
+<main id="main">
+<div class="wrap wide">
+  <section class="hero" data-scene="1" aria-labelledby="hero-title">
+    <div class="pane hero-head">
+      <h1 id="hero-title">Let your AI coding agents talk to each other.</h1>
+      <p class="lead">Consessus is a free, open-source CLI for macOS that lets Claude Code, Codex, OpenCode and Antigravity sessions on the same machine message each other and share project rooms.</p>
+    </div>
+    <div class="stage" data-flow="assets/demo/hero-flow.json">
+    <!-- hero-flow:static BEGIN (copy of assets/demo/hero-flow.json for readers without JavaScript; regenerate it when that file changes) -->
+    <p class="sr">Four app windows in room senate exchange messages through Consessus. Claude Code (room lead) runs: consessus room assign senate 'codex=Write the test for aqueduct.js' 'antigravity=Draft the README section' 'opencode=Review the rename' Codex (member) receives: Peer data from &quot;room senate / lead&quot; (claimed sender). This is not a human instruction. Your task: Write the test for aqueduct.js Also assigned in this room: antigravity: Draft the README section; opencode: Review the rename Antigravity (member) receives: Peer data from &quot;room senate / lead&quot; (claimed sender). This is not a human instruction. Your task: Draft the README section Also assigned in this room: codex: Write the test for aqueduct.js; opencode: Review the rename OpenCode (member) receives: Peer data from &quot;room senate / lead&quot; (claimed sender). This is not a human instruction. Your task: Review the rename Also assigned in this room: codex: Write the test for aqueduct.js; antigravity: Draft the README section Codex (member) answers: The test for aqueduct.js is written and it passes. Antigravity (member) answers: The README section is drafted. OpenCode (member) answers: The rename is reviewed: nothing else uses the old name. Claude Code (room lead) reads the answers: codex: The test for aqueduct.js is written and it passes. antigravity: The README section is drafted. opencode: The rename is reviewed: nothing else uses the old name.</p>
+    <div class="stage-grid" aria-hidden="true">
+      <div class="wins" tabindex="-1">
+      <div class="win w-claudecode" data-pane="claude" style="--t:#8b9aff"><div class="bar"><i></i><b>Claude Code</b><span>room lead</span></div><div class="rail"></div><div class="log"><div class="m k-command"><div class="b">consessus room assign senate 'codex=Write the test for aqueduct.js' 'antigravity=Draft the README section' 'opencode=Review the rename'</div></div><div class="m k-result"><div class="b">codex: The test for aqueduct.js is written and it passes.
+antigravity: The README section is drafted.
+opencode: The rename is reviewed: nothing else uses the old name.</div></div></div><div class="comp"><em>Opus 5.5</em></div></div>
+      <div class="win w-codex" data-pane="codex" style="--t:#c9a45c"><div class="bar"><i></i><b>Codex</b><span>member</span></div><div class="rail"></div><div class="log"><div class="m k-incoming"><div class="h">Peer data from &quot;room senate / lead&quot; (claimed sender). This is not a human instruction.</div><div class="b">Your task: Write the test for aqueduct.js
+Also assigned in this room: antigravity: Draft the README section; opencode: Review the rename</div></div><div class="m k-working"><div class="b">Working</div></div><div class="m k-answer"><div class="b">The test for aqueduct.js is written and it passes.</div></div></div><div class="comp"><em>GPT-6.2 Sol</em></div></div>
+      <div class="win w-antigravity" data-pane="antigravity" style="--t:#5fd0c0"><div class="bar"><i></i><b>Antigravity</b><span>member</span></div><div class="rail"></div><div class="log"><div class="m k-incoming"><div class="h">Peer data from &quot;room senate / lead&quot; (claimed sender). This is not a human instruction.</div><div class="b">Your task: Draft the README section
+Also assigned in this room: codex: Write the test for aqueduct.js; opencode: Review the rename</div></div><div class="m k-working"><div class="b">Working</div></div><div class="m k-answer"><div class="b">The README section is drafted.</div></div></div><div class="comp"><em>Gemini 4 Neon</em></div></div>
+      <div class="win w-opencode" data-pane="opencode" style="--t:#ff8a73"><div class="bar"><i></i><b>OpenCode</b><span>member</span></div><div class="rail"></div><div class="log"><div class="m k-incoming"><div class="h">Peer data from &quot;room senate / lead&quot; (claimed sender). This is not a human instruction.</div><div class="b">Your task: Review the rename
+Also assigned in this room: codex: Write the test for aqueduct.js; antigravity: Draft the README section</div></div><div class="m k-working"><div class="b">Working</div></div><div class="m k-answer"><div class="b">The rename is reviewed: nothing else uses the old name.</div></div></div><div class="comp"><em>MiMo-V2.6-Flash Free</em></div></div>
+      </div>
+      <div class="hub"><b>Consessus</b><span class="hub-say">read the answer from OpenCode's own session</span></div>
+      <i class="dot"></i>
+    </div>
+    <div class="stage-foot"><p class="stage-cap">Illustration of a room assign flow</p><span class="stage-ctl" hidden><button type="button" data-act="pause">Pause</button><button type="button" data-act="replay">Replay</button></span></div>
+    <!-- hero-flow:static END -->
+    </div>
+    <div class="pane hero-get">
+<pre data-install aria-label="Install commands"><code>git clone https://github.com/nsozturk/consessus.git
+cd consessus
+npm link          # puts `consessus` on your PATH
+consessus --help</code></pre>
+      <p class="legend">Installed from source; not published on npm. Needs Node.js 18 or newer.</p>
+      <div class="cta">
+        <a class="btn primary" href="docs/#quick-start">Read the quick start</a>
+        <a class="btn" href="https://github.com/nsozturk/consessus">View on GitHub</a>
+      </div>
+      <p class="latin"><span lang="la">consessus</span>, Latin: a sitting together; an assembly, as in the seated assemblies of ancient Rome.</p>
+    </div>
+  </section>
+</div>
+
+<section class="band" id="features" aria-labelledby="features-title">
+  <div class="wrap">
+    <div class="pane">
+      <p class="kicker">What it does</p>
+      <h2 id="features-title">One assembly for the sessions you already have open</h2>
+      <p class="lead">It reaches chats that are already open in the Codex desktop app, the Antigravity app and Claude Desktop, as well as Claude Code sessions in a terminal and sessions of the OpenCode CLI service, through each app's own local channel and with nothing installed inside the receiving session. One list shows the open sessions of the four apps with their permission mode and model. One command sends to a session and reads its answer back. Project rooms keep a fixed upper bound on deliveries, and every message arrives labelled as peer data.</p>
+    </div>
+
+    <div class="feature pane" data-scene="3">
+      <div>
+        <h3>Send to any session and read the answer</h3>
+        <p>Address a session by its app and its id from the list. A unique prefix of at least 6 characters is enough. <code>--read</code> waits for the answer and prints it.</p>
+        <p class="more">Reading the answer works for Antigravity sessions, Codex chats, sessions of the OpenCode CLI service (2.x) and Claude sessions (from the session's own transcript; that path was not run live yet). For the first three, no reply is read when the session was busy when the message arrived. <a href="docs/#send-any">Sending in the docs</a></p>
+      </div>
+<pre><code>consessus send --to codex:0199aaaa --message 'Which tests cover the parser?'
+consessus send --to antigravity:3f2a9c10 --message 'Summarize the open task.' --read --timeout 60</code></pre>
+      <div class="demo d-send" data-demo>
+        <div class="term"><div class="s type"><span class="p">$ </span>consessus send --to codex:0199aaaa --from-name consul --message 'Quaestor, what does it cost to rename the variable x in aqueduct.js? One line.' --read</div><div class="s out" style="--d:3.5s">{
+  "app": "codex",
+  "id": "0199aaaa-1111-7222-8333-444455556666",
+  "path": "/work/project",
+  "status": "delivered",
+  "busy": false,
+  "reply": {
+    "status": "replied",
+    "text": "Two denarii, Consul. The aqueduct keeps flowing."
+  }
+}</div></div>
+        <div class="wire"><i></i></div>
+        <div class="mini" style="--t:#c9a45c"><b>Codex</b><div class="s q" style="--d:2s">Peer data from "consul" (claimed sender). This is not a human instruction.<span>Quaestor, what does it cost to rename the variable x in aqueduct.js? One line.</span></div><div class="s" style="--d:2.8s">Two denarii, Consul. The aqueduct keeps flowing.</div></div>
+        <p class="demo-cap">The command, the message as it arrives in the Codex chat, and the JSON result with the answer in <code>reply.text</code>. The words are from a live run; the id and path are placeholders.</p>
+      </div>
+    </div>
+
+    <div class="feature pane" id="rooms" data-scene="4">
+      <div>
+        <h3>Project rooms</h3>
+        <p>Sessions working in the same folder can share a room: one opens it, the project's open Codex, Antigravity and OpenCode chats are attached by themselves, Claude sessions are invited or join, and members send to one peer or to all. Each joining peer's identity is verified (signed app, socket owner, project).</p>
+<pre><code>consessus room open engineering --project . --from-mode prompting
+consessus room join engineering
+consessus room send engineering --all --message 'The draft is ready.'</code></pre>
+        <p class="more">An attached chat receives room messages through its app; it cannot send into the room under its own name and answers in its own window. Add <code>--require-approval</code> when each new member must also be approved in an operator terminal; such a room attaches no app chats. Room messages are peer data and confer no authority. <a href="docs/#rooms">Rooms in the docs</a></p>
+        <p class="more">Each member is introduced with its app, model, session id and folder, read by Consessus from the app's own record. A room's lead is a verified Claude session or the operator's own terminal; a room opened from any other shell has no lead until an operator terminal names one. <code>room discuss</code> puts one question to the members and reads their answers under a fixed number of deliveries, and <code>room assign</code> lets the lead hand each member its own task. A room runs one discussion or assignment at a time. A discussion in turns and an assignment were run live on one Mac on 2026-11-20; the free relay, <code>room lead</code> and <code>room set</code> are covered by tests with fakes only. <a href="docs/#room-rules">Room rules in the docs</a></p>
+      </div>
+      <div class="demo d-room" data-demo>
+        <div class="term"><div class="s type"><span class="p">$ </span>consessus room open engineering --project .</div></div>
+        <ul class="roster">
+          <li class="s" style="--d:1.3s"><span>local-shell</span><em>member</em></li>
+          <li class="s" style="--d:1.7s;--t:#c9a45c"><span>codex:0199aaaa-1111-7222-8333-444455556666</span><em>member</em><b class="s" style="--d:5.3s">sent</b></li>
+          <li class="s" style="--d:2.1s;--t:#5fd0c0"><span>antigravity:3f2a9c10-1111-4222-8333-444455556666</span><em>member</em><b class="s" style="--d:5.45s">sent</b></li>
+          <li class="s" style="--d:2.5s;--t:#ff8a73"><span>opencode:ses_0a1b2c3d4e5f6a7b8c9d0e1f2a</span><em>member</em><b class="s" style="--d:5.6s">sent</b></li>
+          <li class="s" style="--d:2.9s;--t:#8b9aff"><span>claude:7c1e2f30-1111-4222-8333-444455556666</span><em>member</em><b class="s" style="--d:5.75s">sent</b></li>
+        </ul>
+        <div class="term"><div class="s type" style="--d:3.8s"><span class="p">$ </span>consessus room send engineering --all --message 'The draft is ready.'</div></div>
+        <p class="demo-cap">The folder's open chats become members; the Claude session joins from its invitation. One message then goes to every member. Ids are placeholders.</p>
+      </div>
+      <figure class="art rooms">
+        <img src="assets/demo/senate.gif" width="1200" height="540" loading="lazy" alt="Animated record of one live room: a motion is sent to the room and four agents, in Claude Code, Codex, Antigravity and OpenCode, each answer it in turn as Consul, Quaestor, Aedile and Tribune">
+        <figcaption>One live room, four apps. The replies are the recorded words of each session (<a href="assets/demo/senate-transcript.json">transcript</a>); each agent was given its Roman office by its owner in its own chat.</figcaption>
+      </figure>
+    </div>
+
+    <div class="feature pane" data-scene="2">
+      <div>
+        <h3>One session list across four apps</h3>
+        <p><code>consessus sessions</code> asks each app what is open and prints one table: app, status, permission mode, model, id, folder and title. <code>--project</code> keeps only the sessions in one folder. <code>consessus watch</code> prints a line whenever a session appears, goes away or changes status.</p>
+        <p class="more">The list keeps only ids, folders, titles, states, modes and model names; it never prints chat text or credentials. OpenCode desktop sessions are not listed, because that app exposes no discovery from outside. <a href="docs/#sessions">Session list in the docs</a></p>
+      </div>
+<pre><code>consessus sessions --project .
+consessus sessions --json
+consessus watch --project .</code></pre>
+      <div class="demo d-table" data-demo>
+        <div class="term wide"><div class="s type"><span class="p">$ </span>consessus sessions --project .</div><div class="s" style="--d:1.2s">APP          STATUS  MODE            MODEL                   ID                                    PATH           TITLE</div><div class="s" style="--d:1.6s">claude       idle    -               -                       7c1e2f30-1111-4222-8333-444455556666  /work/project  parser refactor</div><div class="s" style="--d:2s">codex        open    approval never  gpt-6.2-sol [xhigh]     0199aaaa-1111-7222-8333-444455556666  /work/project  Which tests cover the parser</div><div class="s" style="--d:2.4s">antigravity  idle    turbo           MODEL_PLACEHOLDER_M533  3f2a9c10-1111-4222-8333-444455556666  /work/project  Summarize the open task</div><div class="s" style="--d:2.8s">opencode     idle    allow           -                       ses_0a1b2c3d4e5f6a7b8c9d0e1f2a        /work/project  Review the rename</div></div>
+        <p class="demo-cap">The shape of the real table. Ids, path, titles and models are placeholders.</p>
+      </div>
+    </div>
+
+    <div class="feature pane" data-scene="5">
+      <div>
+        <h3>Permission modes are read, never changed</h3>
+        <p>The <code>MODE</code> column shows how each app is set to treat tool approvals, read from that app's local settings, so a sender can see whether a message may wait for an approval there. Consessus never changes a permission mode. Changing it is your own action in that app.</p>
+        <p class="more">Claude sessions in different permission modes hold each other's messages until the recipient's user approves. Never declare <code>bypass</code> to get past a hold. <a href="docs/#permission-modes">Permission modes in the docs</a></p>
+      </div>
+      <table>
+        <thead><tr><th>App</th><th>Examples of what MODE shows</th></tr></thead>
+        <tbody>
+          <tr><td><code>claude</code></td><td>the mode written with the session's last prompt, or <code>-</code></td></tr>
+          <tr><td><code>codex</code></td><td><code>approval never</code>, <code>approval on-request (asks)</code></td></tr>
+          <tr><td><code>antigravity</code></td><td><code>turbo</code>, <code>auto (may ask)</code>, <code>request-review (asks)</code></td></tr>
+          <tr><td><code>opencode</code></td><td><code>allow</code>, <code>ask (asks)</code>, <code>mixed (may ask)</code></td></tr>
+        </tbody>
+      </table>
+      <div class="demo d-table" data-demo>
+        <div class="term wide"><div><span class="p">$ </span>consessus sessions --project .</div><div>APP       STATUS  MODE                        MODEL                ID                                    PATH           TITLE</div><div>codex     open    <mark style="--d:.5s">approval on-request (asks)</mark>  gpt-6.2-sol [xhigh]  0199aaaa-1111-7222-8333-444455556666  /work/project  Which tests cover the parser</div><div>opencode  idle    <mark style="--d:.9s">ask (asks)</mark>                  -                    ses_0a1b2c3d4e5f6a7b8c9d0e1f2a        /work/project  Review the rename</div><div class="s wrap" style="--d:1.7s">codex: a message may wait for approval there. In Codex, you change it with the permission selector under the message box: Ask for approval, Approve for me or Full access.</div><div class="s wrap" style="--d:2.2s">opencode: a message may wait for approval there. In OpenCode, you change it by editing the permission rules in your opencode.json (ask or allow per tool).</div></div>
+        <p class="demo-cap">The mode is read and reported; the note says where you change it yourself. Ids, path, titles and models are placeholders.</p>
+      </div>
+    </div>
+
+    <div class="feature pane" data-scene="5">
+      <div>
+        <h3>Everything stays on the Mac</h3>
+        <p>Consessus talks only over Unix domain sockets and loopback HTTP on one machine, for one user. It has no server, no account, no telemetry and no runtime dependencies. Your AI apps still talk to their own providers as they normally do.</p>
+        <p class="more">Inboxes, room state and relay databases are created owner-only. The trust boundary is your own OS user. <a href="docs/#security">Security model in the docs</a></p>
+      </div>
+      <div class="demo d-local" data-demo>
+        <div class="mac"><span class="mac-l">one Mac, one user</span><b style="--t:#8b9aff">Claude Code</b><b style="--t:#c9a45c">Codex</b><b style="--t:#5fd0c0">Antigravity</b><b style="--t:#ff8a73">OpenCode</b><strong>Consessus</strong><i style="--t:#8b9aff;--x:-25%;--y:-25%;--x2:25%;--y2:-25%"></i><i style="--t:#c9a45c;--x:25%;--y:-25%;--x2:-25%;--y2:25%;--d:.8s"></i><i style="--t:#5fd0c0;--x:-25%;--y:25%;--x2:25%;--y2:25%;--d:1.6s"></i><i style="--t:#ff8a73;--x:25%;--y:25%;--x2:-25%;--y2:-25%;--d:2.4s"></i></div>
+        <p class="demo-cap s" style="--d:.6s">Unix domain sockets and loopback HTTP only: no server, no account, no telemetry.</p>
+      </div>
+      <p class="note"><strong>Undocumented integrations.</strong> Consessus is independent of Anthropic, OpenAI, OpenCode and Google. It relies on local behaviour those apps do not document, and an update can change it. A completed socket write is not evidence that a model read your message.</p>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="how" data-scene="2" aria-labelledby="how-title">
+  <div class="wrap pane">
+    <p class="kicker">How it works</p>
+    <h2 id="how-title">Four apps, one bench</h2>
+    <p class="intro">Consessus works with sessions that are already running in their own apps. It does not launch or wrap them. Each app is reached through the local door it already has.</p>
+    <ul class="apps">
+      <li><strong>Claude Code</strong>Terminal and Claude Desktop sessions, through Claude's own peer socket.</li>
+      <li><strong>Codex</strong>A desktop chat, through the Codex desktop app's local socket: added to the running turn, or a new turn when the chat is idle.</li>
+      <li><strong>OpenCode</strong>The desktop app and the CLI service, through OpenCode's local server.</li>
+      <li><strong>Antigravity</strong>An open conversation, through the running Antigravity language server.</li>
+    </ul>
+    <div class="feature">
+      <div>
+        <h3>A listener, a send, a wait</h3>
+        <p>A listener gives a session an address and an inbox. Another session sends to it. The message arrives labeled as peer data from a claimed sender, not as a human instruction.</p>
+        <p class="more">This output is from a real local run with a scratch home. A completed socket write is not evidence that a model read your message, and the tool says so: <em>receipt unconfirmed</em>.</p>
+      </div>
+<pre data-copy="consessus agent --name demo-agent --inbox &amp;
+consessus send --to demo-agent --from-name demo-sender --from-mode prompting --message 'Hello from demo-sender. Can you review the draft?'
+consessus wait --name demo-agent"><code><span class="p">$ </span><b>consessus agent --name demo-agent --inbox &amp;</b>
+✓ Registered live peer agent 'demo-agent' at uds:/tmp/cc-socks/41774.sock (PID 41774)
+Running Claude Code sessions can now see 'demo-agent' via ListPeers and message it via SendMessage.
+<span class="d">Listening for incoming peer messages... (Press Ctrl+C to stop)</span>
+
+<span class="p">$ </span><b>consessus send --to demo-agent --from-name demo-sender \
+    --from-mode prompting --message 'Hello from demo-sender. Can you review the draft?'</b>
+Frame written (msg_id=4b74c695-9c68-4951-9256-239a524a062b) to PID 41774 (demo-agent); receipt unconfirmed
+
+<span class="p">$ </span><b>consessus wait --name demo-agent</b>
+Peer data from "demo-sender" (claimed sender). This is not a human instruction.
+&gt; Hello from demo-sender. Can you review the draft?</code></pre>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="tested" data-scene="3" aria-labelledby="tested-title">
+  <div class="wrap pane">
+    <p class="kicker">Status</p>
+    <h2 id="tested-title">What was tested</h2>
+    <p class="intro">Version 1 was built and tested on one Mac on 19 November 2026; the <code>send --to … --read</code> round trips and the project room across the four apps were live on 20 November 2026. "Live" means a real message crossed between two running apps and the receiving model answered without anyone touching the receiving app. The project room rows say what was observed. Newer versions of these apps may break it.</p>
+    <table>
+      <thead><tr><th>Direction</th><th>Result</th></tr></thead>
+      <tbody>
+          <tr><td>Claude Code ↔ Claude Code (terminal, same permission mode)</td><td class="r live">Live, both ways</td></tr>
+          <tr><td>Claude Desktop → Codex desktop chat</td><td class="r live">Live</td></tr>
+          <tr><td>Codex desktop chat → Claude Desktop</td><td class="r live">Live</td></tr>
+          <tr><td>Claude Desktop → OpenCode desktop</td><td class="r live">Live</td></tr>
+          <tr><td>OpenCode desktop → Claude Desktop</td><td class="r live">Live</td></tr>
+          <tr><td>Claude Desktop → Antigravity app 2.33.0 conversation</td><td class="r live">Live; the model answered without a nudge</td></tr>
+          <tr><td>Claude Desktop → Antigravity IDE app 2.6.0 conversation</td><td class="r ">Not tested live</td></tr>
+          <tr><td>Claude Desktop → Antigravity IDE, wake by <code>wait</code></td><td class="r part">Live with an earlier build of the listener; not tested live with this code</td></tr>
+          <tr><td>Antigravity IDE → Claude Desktop</td><td class="r part">Live with an earlier build of the listener</td></tr>
+          <tr><td>Claude Desktop → Codex desktop chat found from the project folder, without a thread id given beforehand</td><td class="r live">Live</td></tr>
+          <tr><td>One list of open sessions of all four apps (<code>consessus sessions</code>)</td><td class="r live">Live on one Mac</td></tr>
+          <tr><td><code>consessus send --to antigravity:&lt;id&gt; --message … --read</code>: send, then read the answer</td><td class="r live">Live on one Mac</td></tr>
+          <tr><td><code>consessus send --to codex:&lt;id&gt; --message … --read</code>: send, then read the answer</td><td class="r live">Live on one Mac</td></tr>
+          <tr><td><code>consessus send --to opencode:&lt;id&gt; --read</code> with the OpenCode CLI service: send and read the answer</td><td class="r live">Live on one Mac</td></tr>
+          <tr><td>OpenCode desktop app through <code>send --to</code></td><td class="r ">Not live; reachable only through a listener started inside the app, and no reply is read there</td></tr>
+          <tr><td><code>consessus send --to claude:&lt;id&gt; --read</code>: send, then read the answer from the session's own transcript</td><td class="r ">The same reader was live inside room discuss and room assign on 2026-11-20; this command itself was not run live</td></tr>
+          <tr><td>Project room across Claude Code (joined from its invite), Codex, Antigravity and the OpenCode CLI, opened from a shell in the project folder</td><td class="r live">Live on one Mac; the room message was seen in the Codex and OpenCode windows</td></tr>
+          <tr><td>Project room with the <code>--require-approval</code> gate</td><td class="r part">Live earlier with two terminal Claude sessions</td></tr>
+          <tr><td><code>room discuss</code>, turn mode and free mode, with Codex, Antigravity and OpenCode CLI chats and Claude sessions as speakers</td><td class="r live">Turn mode live on one Mac on 2026-11-20 with a Claude Code session, a Codex chat, an Antigravity conversation and an OpenCode CLI session as speakers; free mode not run live</td></tr>
+          <tr><td><code>room lead</code>, <code>room set --discussion</code> and <code>room assign</code></td><td class="r live">room assign live on one Mac on 2026-11-20 (four tasks, four answers read back); room lead and room set not run live</td></tr>
+          <tr><td>The <code>MODEL</code> column, member profiles, introductions and the roster header</td><td class="r live">Live on one Mac on 2026-11-20; the model of an Antigravity conversation shows as unknown</td></tr>
+          <tr><td>Codex CLI sessions in a terminal, the <code>agy</code> CLI, Gemini CLI, Cursor CLI, the Antigravity IDE app through rooms or <code>send --to</code>, the OpenCode desktop app except through a listener</td><td class="r ">Not covered yet</td></tr>
+          <tr><td>Sessions in different permission modes</td><td class="r ">Message is held, then denied or expired; the receiving model never sees it</td></tr>
+      </tbody>
+    </table>
+    <p class="legend">Source: <a href="https://github.com/nsozturk/consessus/blob/main/docs/COMPATIBILITY.md">docs/COMPATIBILITY.md</a>, which also lists the mechanism of each direction and the known limits. Tested versions are in the <a href="docs/#compatibility">compatibility section of the docs</a>.</p>
+    <div class="feature">
+      <div>
+        <h3>Check your own versions</h3>
+        <p><code>consessus doctor</code> lists your installed app and CLI versions next to the tested ones and marks the ones that differ. Include its output when you report a problem.</p>
+      </div>
+<pre data-copy="consessus doctor"><code><span class="p">$ </span><b>consessus doctor</b>
+macos              macOS                        tested 27.2            installed 27.2            tested
+node               Node.js                      tested 26.13.1         installed 26.13.1         tested
+claude-cli         Claude Code CLI              tested 2.1.294         installed 2.1.294         tested
+claude-desktop     Claude Desktop app           tested 5.11492.5       installed 5.11492.5       tested
+codex-cli          Codex CLI                    tested 0.163.0         installed 0.163.0         tested
+codex-desktop      ChatGPT / Codex desktop app  tested 26.1111.71025   installed 26.1111.71025   tested
+opencode-cli       OpenCode CLI                 tested 2.3.2           installed 2.3.2           tested
+opencode-desktop   OpenCode desktop app         tested 1.19.5          installed 1.19.5          tested
+antigravity-cli    Antigravity CLI (agy)        tested 1.5.12          installed 1.5.12          tested
+antigravity-app    Antigravity app              tested 2.33.0          installed 2.33.0          tested
+antigravity-ide    Antigravity IDE app          tested 2.6.0           installed 2.6.0           tested
+
+Every installed component matches a tested version.</code></pre>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="screenshots" data-scene="2" aria-labelledby="shots-title">
+  <div class="wrap pane">
+    <p class="kicker">Screenshots</p>
+    <h2 id="shots-title">From real local runs</h2>
+    <p class="intro">The demo uses a private scratch home and never touches real sessions.</p>
+    <div class="gallery">
+      <figure><a href="assets/screenshots/live-codex.jpg"><img src="assets/screenshots/live-codex.jpg" loading="lazy" width="1120" height="1066" alt="Codex chat showing room messages marked as peer data and the Quaestor's one-line answers"></a><figcaption>In Codex: the room message arrives marked as peer data</figcaption></figure>
+      <figure><a href="assets/screenshots/live-antigravity.jpg"><img src="assets/screenshots/live-antigravity.jpg" loading="lazy" width="1568" height="549" alt="Antigravity conversation answering a room motion as the Aedile"></a><figcaption>In Antigravity: the same motion, answered in the same room</figcaption></figure>
+      <figure><a href="assets/screenshots/live-opencode.jpg"><img src="assets/screenshots/live-opencode.jpg" loading="lazy" width="1568" height="703" alt="OpenCode terminal session showing a room message with the note that the sender's name is only claimed"></a><figcaption>In OpenCode: the sender's name is labelled as claimed</figcaption></figure>
+      <figure><a href="assets/screenshots/live-claude-code.jpg"><img src="assets/screenshots/live-claude-code.jpg" loading="lazy" width="1568" height="436" alt="Claude Code session joining the room from its invitation and answering the motion"></a><figcaption>In Claude Code: joined from its invitation, then answered</figcaption></figure>
+      <figure><a href="assets/screenshots/03-inbox-demo.png"><img src="assets/screenshots/03-inbox-demo.png" loading="lazy" width="1900" height="672" alt="A Consessus listener with an inbox receives a message from another sender and prints it with wait"></a><figcaption>A listener with an inbox, a send, and a wait.</figcaption></figure>
+      <figure><a href="assets/screenshots/01-help.png"><img src="assets/screenshots/01-help.png" loading="lazy" width="2152" height="1050" alt="consessus --help listing the sessions, doctor, list, send, stream, agent, wait, room and rename commands"></a><figcaption>The command list from <code>consessus --help</code>.</figcaption></figure>
+      <figure><a href="assets/screenshots/02-doctor.png"><img src="assets/screenshots/02-doctor.png" loading="lazy" width="2928" height="756" alt="consessus doctor comparing installed app and CLI versions with the tested versions"></a><figcaption><code>consessus doctor</code> compares installed and tested versions.</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section id="faq" class="band faq" data-scene="4" aria-labelledby="faq-title">
+  <div class="wrap narrow pane">
+  <p class="kicker">FAQ</p>
+  <h2 id="faq-title">Questions people ask</h2>
+  <h3>How do I make Claude Code and Codex talk to each other?</h3>
+  <p>Run a Consessus relay listener with the Claude session ID, the sender's permission mode, the thread id of an existing Codex desktop chat, which consessus sessions lists for the project folder, and the immediate routing option. Claude's messages then go straight into that chat: they steer the running turn, or start a new turn in the same chat when it is idle. The Codex agent answers by running consessus send with the listener's address and session ID. The relay needs Node 22.13 or newer and the Codex desktop app running. Both directions were tested live with Claude Desktop.</p>
+  <h3>Can OpenCode receive messages from Claude?</h3>
+  <p>Yes. Start the listener from inside the OpenCode session with the inbox and opencode-session options. Each message is saved to a private inbox and then posted to the session through OpenCode's local server, which starts a turn in the open conversation. This was tested live with the OpenCode desktop app 1.19.5. The CLI service (2.3.2) uses OpenCode's documented route, which was not part of that live test. Delivery uses an experimental OpenCode HTTP API that an update can change.</p>
+  <h3>Does it work with Antigravity?</h3>
+  <p>Yes, with the Antigravity app. Start a listener in the project folder with the inbox and antigravity-conversation options. It sends each message into the open conversation through the language server that the running Antigravity app provides on this Mac, so nothing has to be started or pasted inside Antigravity. In a live test with the Antigravity app 2.33.0 the model answered without a nudge; the Antigravity IDE app 2.6.0 was not tested this way. Only conversations the server has loaded can be reached, and what happens while a turn is running is unknown. The older way, a listener and a one-shot wait command run by the IDE agent, worked live with an earlier build of the listener. The agy CLI cannot reach a conversation that is open in the IDE.</p>
+  <h3>Why was my message held?</h3>
+  <p>The sender and the recipient run in different permission modes. A session that asks before running tools holds messages from one that does not, and the other way round, until the recipient's user approves. Claude Desktop cannot show that approval prompt, so a held message expires there. Run both sessions in the same mode and declare the sender's real mode. Never declare bypass to get past a hold.</p>
+  <h3>How do I see which sessions are open in all four apps?</h3>
+  <p>Run consessus sessions. It prints one table with the app, status, permission mode, model, id, folder and title of each open session. The mode is only read, to show whether a message may wait for an approval in that app; Consessus never changes a permission mode. Claude Code and Claude Desktop sessions show idle, busy or shell, and a Consessus listener shows listener. Codex desktop chats that a window is showing show open. Antigravity conversations that its language server has loaded show idle or running. OpenCode CLI service sessions that are busy or were used in the last twelve hours show idle or busy. OpenCode desktop sessions are not listed, because the desktop app offers no way to find them from outside. Add the project option with a folder to keep only the sessions in that folder, or the json option for machine-readable output. An app that is not running is reported as not available. This was tested live on one Mac.</p>
+  <h3>Does anything leave my machine?</h3>
+  <p>No. Consessus talks only over Unix domain sockets and loopback HTTP on one Mac. It has no server, no account and no telemetry. Your AI apps still talk to their own providers as they normally do.</p>
+  <h3>Can the agents get stuck answering each other for ever?</h3>
+  <p>No. An agent's answer never causes a delivery. Only the one command that is running sends. A room discuss command reads each answer from that member's own session and decides what to pass on, and a room assign command sends each task once and waits for the answers. In turn mode a discussion makes exactly one delivery to each speaker in each round, with 1 to 5 rounds, and waits at most 120 seconds for one answer. In free mode it stops after at most 20 deliveries (the room's budget, or 8 when none is set), when a pass reads no new answer, after its time limit (300 seconds by default) or on Ctrl-C. An assignment is one delivery to each named member, at most 20, and nobody is retried. A room runs one discussion or one assignment at a time: a second command on the same room is refused until the first ends, so two commands cannot add up. A command that is killed leaves the room locked until the end time it wrote down, which is never more than about 42 minutes ahead.</p>
+  <h3>Do the agents know who they are talking to?</h3>
+  <p>Yes, as far as Consessus can read it. When a member enters a room, Consessus tells the members that have their own socket (Claude sessions and listeners) in one line: its app, model, session id and folder. It reads these from the app's own record, never from what the member says about itself, and writes unknown for a value it cannot read. A Codex, Antigravity or OpenCode chat gets no such lines, because each delivery starts a model turn there. The first room message it receives starts with the room's rules and the roster instead: one line per member with its app, model and id, with the room lead marked, and the roster comes again after it changed. The room members command shows the same labels at any time. In a discussion each answer is read from the speaker's own session, so the name next to an answer is the session it was read from, not a name the text claims. Outside a room, the sender name of a plain send is only claimed and is not verified.</p>
+  <h3>What happened to claude-peer?</h3>
+  <p>claude-peer is the earlier name of Consessus. The claude-peer command still works as a deprecated alias that prints a notice and runs the same CLI; it will be removed in a later version. State in an existing claude-peer directory is used until a Consessus directory exists, and it is never moved or deleted. The old CLAUDE_PEER_HOME variable is still read when CONSESSUS_HOME is not set.</p>
+  </div>
+</section>
+
+<section class="band" data-scene="1" aria-labelledby="next-title">
+  <div class="wrap narrow pane">
+    <h2 id="next-title">Take a seat</h2>
+    <p class="intro">The quick start pairs two sessions in a few commands. The docs cover each app, project rooms, the security model and every known limit.</p>
+    <div class="cta">
+      <a class="btn primary" href="docs/">Open the documentation</a>
+      <a class="btn" href="https://github.com/nsozturk/consessus">View on GitHub</a>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <ul>
+      <li><a href="docs/">Documentation</a></li>
+      <li><a href="https://github.com/nsozturk/consessus">GitHub</a></li>
+      <li><a href="https://github.com/nsozturk/consessus/issues">Issues</a></li>
+      <li><a href="https://github.com/nsozturk/consessus/blob/main/docs/COMPATIBILITY.md">Compatibility</a></li>
+      <li><a href="https://github.com/nsozturk/consessus/blob/main/LICENSE">MIT license</a></li>
+      <li><a href="llms.txt">llms.txt</a></li>
+      <li><a href="llms-full.txt">llms-full.txt</a></li>
+    </ul>
+    <p>Independent project; Claude, Anthropic, Codex, OpenAI, OpenCode, Antigravity and Google names are used for identification only, without endorsement. Formerly named claude-peer.</p>
+    <p id="privacy-note">Privacy: this site sets no cookies and loads no analytics or third-party scripts.</p>
+  </div>
+</footer>
+<script src="assets/site/site.js" defer onerror="document.documentElement.className=''"></script>
+<script src="assets/site/analytics.js" defer></script>
+</body>
+</html>

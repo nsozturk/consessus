@@ -1,0 +1,60 @@
+{
+  "name": "consessus",
+  "version": "1.0.0",
+  "description": "Consessus is a free, open-source CLI for macOS that lets Claude Code, Codex, OpenCode and Antigravity sessions on the same machine message each other and share project rooms.",
+  "type": "module",
+  "main": "./src/index.mjs",
+  "types": "./types/index.d.ts",
+  "bin": {
+    "consessus": "./bin/consessus.mjs",
+    "claude-peer": "./bin/claude-peer.mjs"
+  },
+  "files": [
+    "AGENTS.md",
+    "CITATION.cff",
+    "GLOBAL_AGENT_RULE.md",
+    "LICENSE",
+    "README.md",
+    "assets",
+    "bin",
+    "docs/*.md",
+    "examples",
+    "llms.txt",
+    "src",
+    "types"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "screenshots": "node scripts/screenshots.mjs",
+    "release-assets": "sh scripts/release-assets.sh"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "consessus",
+    "claude-code",
+    "codex",
+    "opencode",
+    "antigravity",
+    "agent-messaging",
+    "multi-agent",
+    "ai-agents",
+    "agent-to-agent",
+    "coding-agents",
+    "local-ipc",
+    "unix-domain-socket",
+    "macos",
+    "cli"
+  ],
+  "author": "nsozturk",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nsozturk/consessus.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nsozturk/consessus/issues"
+  },
+  "homepage": "https://nsozturk.github.io/consessus/"
+}

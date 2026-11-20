@@ -1,0 +1,12 @@
+node_modules/
+logs/
+*.log
+.DS_Store
+.env
+tmp/
+data/
+*.sqlite*
+dist/
+.claude/
+design-originals/
+checkpoints/

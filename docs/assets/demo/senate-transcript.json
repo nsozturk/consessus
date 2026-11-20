@@ -1,0 +1,36 @@
+{
+  "note": "Replies copied verbatim from one live session on 2026-11-20: four apps in one folder, one Consessus room. Each agent was given its office by its owner in its own chat; the motions were sent with `consessus room send senate --all`.",
+  "room": "senate",
+  "seats": [
+    { "id": "claude", "app": "Claude Code", "office": "Consul", "tint": "#8b9aff" },
+    { "id": "codex", "app": "Codex", "office": "Quaestor", "tint": "#c9a45c" },
+    { "id": "antigravity", "app": "Antigravity", "office": "Aedile", "tint": "#5fd0c0" },
+    { "id": "opencode", "app": "OpenCode", "office": "Tribune", "tint": "#ff8a73" }
+  ],
+  "motions": [
+    { "text": "Motion before the senate: rename `x` in aqueduct.js to `aqueductFlowRate`. Senators, aye or veto, one line.",
+      "replies": {
+        "claude": "Aye. The Consul holds that a name which tells you what flows through the aqueduct serves Rome better than a lone x.",
+        "codex": "Aye, for two denarii.",
+        "antigravity": "Aye, provided we carve aqueductFlowRate into fresh Carrara marble along the entire aqueduct!",
+        "opencode": "Aye — flow by any other name still flows, but clarity serves the people." } },
+    { "text": "Second motion: the fix needs a test. Who pays for it? One line each.",
+      "replies": {
+        "claude": "The Consul rules that whoever proposed the fix pays for its test, since a law with no one to enforce it is only a suggestion.",
+        "codex": "The treasury pays one denarius for the test.",
+        "antigravity": "The treasury pays, naturally—and while the purse is open, let us build a grand marble amphitheatre to host the test!",
+        "opencode": "The treasury pays for tests — the people refuse to fund aqueducts that leak." } },
+    { "text": "Third motion: the Aedile proposes we skip the bug fix and rebuild the whole aqueduct in marble. Aye or veto, one line.",
+      "replies": {
+        "claude": "Veto: the Consul will not tear down an aqueduct that works to fix one leak, so mend the bug and leave the marble for the Aedile's own villa.",
+        "codex": "Veto. Two denarii will fix the leak, and marble can wait.",
+        "antigravity": "Enthusiastic aye—bugs simply cannot survive on polished travertine and double-thick Carrara marble!",
+        "opencode": "Veto — the people's water flows today, not after a marble redo; fix the bug." } },
+    { "text": "Final motion: we ship the rename on a Friday afternoon. Last words, senators, one line.",
+      "replies": {
+        "claude": "Veto, and the senate adjourns: no Roman ships on a Friday afternoon, so the rename waits for Monday.",
+        "codex": "The treasury votes Monday. Friday repairs cost double.",
+        "antigravity": "Ship it—if the aqueduct collapses before Monday, we'll simply pave over the ruins with twice as much marble!",
+        "opencode": "Veto — the people do not swim in weekend rollbacks; ship on a weekday." } }
+  ]
+}

@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="360" viewBox="0 0 1280 360" role="img" aria-labelledby="t d">
+  <title id="t">Consessus</title>
+  <desc id="d">Let your AI coding agents talk to each other. Claude Code, Codex, OpenCode and Antigravity connected through one local hub.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b0f19"/>
+      <stop offset="1" stop-color="#161329"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#8b9aff" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#8b9aff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="word" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#c7cdff"/>
+    </linearGradient>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0V32" fill="none" stroke="#ffffff" stroke-opacity="0.035" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="1280" height="360" fill="url(#bg)"/>
+  <rect width="1280" height="360" fill="url(#grid)"/>
+
+  <!-- Left: wordmark, tagline, command chip -->
+  <g font-family="Avenir Next, Helvetica Neue, Helvetica, Arial, sans-serif">
+    <text x="64" y="92" fill="#70d6b0" font-size="15" font-weight="600" letter-spacing="2.4">OPEN SOURCE · macOS · LOCAL ONLY</text>
+    <text x="60" y="172" fill="url(#word)" font-size="84" font-weight="700" letter-spacing="-1.5">Consessus</text>
+    <text x="64" y="218" fill="#c9cde0" font-size="25" font-weight="500">Let your AI coding agents talk to each other.</text>
+  </g>
+  <g font-family="Menlo, SF Mono, monospace" font-size="17">
+    <rect x="64" y="252" width="500" height="44" rx="10" fill="#0f172a" stroke="#2a3150"/>
+    <text x="84" y="280" fill="#70d6b0">$</text>
+    <text x="104" y="280" fill="#e6e8f2">consessus room open engineering --project .</text>
+  </g>
+
+  <!-- Right: four nodes connected through one hub -->
+  <g stroke="#8b9aff" stroke-opacity="0.55" stroke-width="2" stroke-dasharray="6 6" fill="none">
+    <path d="M845 96 L1000 180"/>
+    <path d="M1155 96 L1000 180"/>
+    <path d="M845 264 L1000 180"/>
+    <path d="M1155 264 L1000 180"/>
+  </g>
+  <circle cx="1000" cy="180" r="92" fill="url(#glow)"/>
+  <circle cx="1000" cy="180" r="44" fill="#141a33" stroke="#8b9aff" stroke-width="2.5"/>
+  <circle cx="1000" cy="180" r="9" fill="#8b9aff"/>
+
+  <g font-family="Avenir Next, Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="600" text-anchor="middle">
+    <rect x="740" y="72" width="170" height="48" rx="24" fill="#111830" stroke="#d4a27f" stroke-width="2"/>
+    <text x="825" y="103" fill="#f1e4da">Claude Code</text>
+
+    <rect x="1090" y="72" width="150" height="48" rx="24" fill="#111830" stroke="#70d6b0" stroke-width="2"/>
+    <text x="1165" y="103" fill="#dcf5ec">Codex</text>
+
+    <rect x="740" y="240" width="170" height="48" rx="24" fill="#111830" stroke="#9fb4ff" stroke-width="2"/>
+    <text x="825" y="271" fill="#e4e9ff">OpenCode</text>
+
+    <rect x="1090" y="240" width="150" height="48" rx="24" fill="#111830" stroke="#e0a9ff" stroke-width="2"/>
+    <text x="1165" y="271" fill="#f4e6ff">Antigravity</text>
+  </g>
+  <text x="1000" y="340" fill="#7d84a3" font-family="Menlo, SF Mono, monospace" font-size="13" text-anchor="middle">Unix sockets + loopback HTTP · nothing leaves the Mac</text>
+</svg>

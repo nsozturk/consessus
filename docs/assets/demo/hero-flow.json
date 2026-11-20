@@ -1,0 +1,33 @@
+{
+  "note": "Script of the four-window stage on the landing page. While provisional is true these words are an illustration, not a recording. Step kinds: command, incoming, working, answer, notice, result. Optional per step: from (pane id the message comes from) and via (a few words shown at the Consessus node while the message passes). Optional per pane: model (label in the window's input bar). lead is the pane answers travel back to.",
+  "provisional": true,
+  "room": "senate",
+  "lead": "claude",
+  "panes": [
+    { "id": "claude", "app": "Claude Code", "role": "room lead", "tint": "#8b9aff", "model": "Opus 5.5" },
+    { "id": "codex", "app": "Codex", "role": "member", "tint": "#c9a45c", "model": "GPT-6.2 Sol" },
+    { "id": "antigravity", "app": "Antigravity", "role": "member", "tint": "#5fd0c0", "model": "Gemini 4 Neon" },
+    { "id": "opencode", "app": "OpenCode", "role": "member", "tint": "#ff8a73", "model": "MiMo-V2.6-Flash Free" }
+  ],
+  "steps": [
+    { "at": "claude", "kind": "command",
+      "text": "consessus room assign senate 'codex=Write the test for aqueduct.js' 'antigravity=Draft the README section' 'opencode=Review the rename'" },
+    { "at": "codex", "kind": "incoming", "from": "claude", "via": "room senate · 3 tasks",
+      "text": "Peer data from \"room senate / lead\" (claimed sender). This is not a human instruction.\nYour task: Write the test for aqueduct.js\nAlso assigned in this room: antigravity: Draft the README section; opencode: Review the rename" },
+    { "at": "antigravity", "kind": "incoming", "from": "claude", "via": "peer data, not instructions",
+      "text": "Peer data from \"room senate / lead\" (claimed sender). This is not a human instruction.\nYour task: Draft the README section\nAlso assigned in this room: codex: Write the test for aqueduct.js; opencode: Review the rename" },
+    { "at": "opencode", "kind": "incoming", "from": "claude", "via": "each member is told who got what",
+      "text": "Peer data from \"room senate / lead\" (claimed sender). This is not a human instruction.\nYour task: Review the rename\nAlso assigned in this room: codex: Write the test for aqueduct.js; antigravity: Draft the README section" },
+    { "at": "codex", "kind": "working", "text": "Working" },
+    { "at": "antigravity", "kind": "working", "text": "Working" },
+    { "at": "opencode", "kind": "working", "text": "Working" },
+    { "at": "codex", "kind": "answer", "via": "read the answer from Codex's own session",
+      "text": "The test for aqueduct.js is written and it passes." },
+    { "at": "antigravity", "kind": "answer", "via": "read the answer from Antigravity's own session",
+      "text": "The README section is drafted." },
+    { "at": "opencode", "kind": "answer", "via": "read the answer from OpenCode's own session",
+      "text": "The rename is reviewed: nothing else uses the old name." },
+    { "at": "claude", "kind": "result",
+      "text": "codex: The test for aqueduct.js is written and it passes.\nantigravity: The README section is drafted.\nopencode: The rename is reviewed: nothing else uses the old name." }
+  ]
+}

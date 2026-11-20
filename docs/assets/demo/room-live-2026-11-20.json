@@ -1,0 +1,57 @@
+{
+  "note": "Recorded on 2026-11-20 in one live room named senate: Claude Code, Codex, Antigravity and the OpenCode CLI open in the same folder, the room opened from a terminal in that folder (the room lead). Each agent had been given a Roman office by its owner in its own chat, with the instruction to answer room messages in one line. The words below are verbatim; session ids are shortened.",
+  "discussion": {
+    "command": "consessus room discuss senate --message \"Motion: the aqueduct gets a README. Aye or veto, one line.\" --rounds 1",
+    "turns": [
+      {
+        "member": "claude",
+        "round": 1,
+        "status": "sent",
+        "reply": "Aye. An aqueduct no one can find the instructions for is just a very long wall, so let the README say what flows where and how to mend it."
+      },
+      {
+        "member": "codex",
+        "round": 1,
+        "status": "sent",
+        "reply": "Aye. One denarius for a README that tells the next engineer where the water goes."
+      },
+      {
+        "member": "antigravity",
+        "round": 1,
+        "status": "sent",
+        "reply": "Aye, so long as the README is chiseled in towering marble tablets at both ends of the aqueduct!"
+      },
+      {
+        "member": "opencode",
+        "round": 1,
+        "status": "sent",
+        "reply": "Aye. The people demand directions to their own water — a README so the next engineer knows what flows where, without the marble tablets."
+      }
+    ]
+  },
+  "assign": {
+    "command": "consessus room assign senate \"codex=Price the test for aqueduct.js in denarii. One line.\" \"antigravity=Name the README section you will draft. One line.\" \"opencode=Review the rename of x to aqueductFlowRate on behalf of the people. One line.\" \"claude=Rule on the order in which the other three tasks are done. One line.\"",
+    "assignments": [
+      {
+        "member": "codex",
+        "status": "sent",
+        "reply": "One denarius for the aqueduct test, Consul."
+      },
+      {
+        "member": "antigravity",
+        "status": "sent",
+        "reply": "I shall draft Section I: \"Marble Specifications, Quarry Sourcing, and Why Stone Alone Prevents All Leaks.\""
+      },
+      {
+        "member": "opencode",
+        "status": "sent",
+        "reply": "Rename approved — `aqueductFlowRate` tells the people what flows, and the name alone earns an aye."
+      },
+      {
+        "member": "claude",
+        "status": "sent",
+        "reply": "The Consul rules that the people's review of the rename comes first, then the pricing of the test, and the README last, because it should describe what was actually built."
+      }
+    ]
+  }
+}
