@@ -24,6 +24,31 @@ these and marks the ones that differ. Please include its output when you report 
 | Antigravity app | 2.33.0 |
 | Antigravity IDE app | 2.6.0 |
 
+### A newer app version that breaks a channel
+
+- **ChatGPT / Codex desktop app 26.1117.41037 (seen on 2026-11-21).** This build opens no local IPC socket, so Consessus cannot list or write to Codex desktop chats: `consessus sessions` says Codex is not available. With 26.1111.71025 installed again on the same Mac the socket was back.
+
+### Getting the tested Codex desktop build again
+
+OpenAI's own server keeps each build under its version number. Consessus does not ship or mirror any app.
+
+| Build | Download (Apple Silicon) | Size in bytes | SHA-256 |
+|---|---|---:|---|
+| 26.1111.71025 (tested) | `https://persistent.oaistatic.com/codex-app-prod/ChatGPT-darwin-arm64-26.1111.71025.zip` | 835,838,478 | `7edb7f133e41d947a9e11826f3669fd32be2ff6c6bbdaa01e40eb41b9e39e957` |
+
+How this file was checked on 2026-11-21, and how you can check yours:
+
+```bash
+shasum -a 256 ChatGPT-darwin-arm64-26.1111.71025.zip   # the value above; Homebrew's cask history lists the same value for this build
+ditto -x -k ChatGPT-darwin-arm64-26.1111.71025.zip out
+codesign --verify --deep --strict out/ChatGPT.app      # no output means the signature is intact
+spctl -a -vv out/ChatGPT.app                           # "accepted", "Notarized Developer ID", OpenAI OpCo, LLC (2DC432GLL2)
+```
+
+- The size and the Ed25519 signature in the app's own update feed (`https://persistent.oaistatic.com/codex-app-prod/appcast.xml`) also matched, checked against the public key in the app's `Info.plist`.
+- The app turns its automatic update back on at every start (`SUEnableAutomaticChecks` is rewritten), so a `defaults write` does not hold. What held on the test Mac: `chflags uchg /Applications/ChatGPT.app`, which stops the bundle from being replaced. Undo it with `chflags nouchg /Applications/ChatGPT.app` before you update on purpose.
+- Going back to an older build is at your own risk: a newer build may have changed its own data files.
+
 ## What was proven, and how
 
 "Live" means a real message crossed between two running apps and the receiving model answered without anyone
