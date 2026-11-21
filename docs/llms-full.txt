@@ -991,6 +991,28 @@ spctl -a -vv out/ChatGPT.app                           # "accepted", "Notarized 
 - The app turns its automatic update back on at every start (`SUEnableAutomaticChecks` is rewritten), so a `defaults write` does not hold. What held on the test Mac: `chflags uchg /Applications/ChatGPT.app`, which stops the bundle from being replaced. Undo it with `chflags nouchg /Applications/ChatGPT.app` before you update on purpose.
 - Going back to an older build is at your own risk: a newer build may have changed its own data files.
 
+### Official downloads of the other builds that work
+
+Checked on 2026-11-21 on the Mac where every channel worked (`consessus doctor --probe`). Each file was downloaded from its publisher's own server; its SHA-256 equals the value in the Homebrew cask history for that version, and the app inside passed `spctl` (notarized). Consessus does not ship or mirror any app.
+
+| App | Build | Download (Apple Silicon) | SHA-256 | Same as the installed copy |
+|---|---|---|---|---|
+| Claude Desktop | 6.28899.2 | `https://downloads.claude.ai/releases/darwin/universal/6.28899.2/Claude-155ca43c0ad5a4bd5734795688543b65b464cf47.zip` | `693b9383d88cda46c3583b52dd7514abc6463dfe7af0a6bb59d3f1adb7447e64` | Same version and signer (Anthropic, Q6L2SF6YDW); a different code-signature hash, so the installed copy came from another package of that version (for example the app's own updater) |
+| Antigravity | 2.34.0 | `https://storage.googleapis.com/antigravity-public/antigravity-hub/2.34.0-5887025308631040/darwin-arm/Antigravity.dmg` | `385c89149ac0d81a8e16ef032cf76b84957ba7db2e4d28f4a357ddba2e0181c9` | Yes: same code-signature hash |
+| Antigravity IDE | 2.8.0 | `https://edgedl.me.gvt1.com/edgedl/release2/j0qc3/antigravity/stable/2.8.0-6733682917113856/darwin-arm/Antigravity%20IDE.dmg` | `68aa6d8eefef64812bb4e6d59a8566c4d31dca43a9af5d3ca320d472729a91d4` | Yes: same code-signature hash |
+| OpenCode desktop | 2.3.2 | `https://opencode.ai/files/bin/2.3.2/opencode-desktop-mac-arm64.dmg` | `2c46269132d2acbd8a73ed931bb61fa39fd17e80facd815193c536c3ae4e052c` | Yes: same code-signature hash |
+
+The CLIs, with the integrity value their registry publishes (the local copy cannot be compared: npm keeps no hash of what it installed):
+
+| CLI | Version | Package | Published integrity |
+|---|---|---|---|
+| Claude Code | 2.1.329 | npm `@anthropic-ai/claude-code` | `sha512-WQ7RY331gsODjOoDBbeG1fjMfKY1Ur9yxWAOI9SgdLZvqA9sAREaezXt7e3uNbHlgjVAZg1IqlJT1J7WKViEFA==` |
+| Codex CLI | 0.163.0 | npm `@openai/codex` | `sha512-HNd7vR9oTK6M2ikxFnvNDCdYUgAsyo9VVnd5KnEd2ON0GYI++7MiX9XNPUkhtdgGKFPsWS+CEppQ1UU63uVhUw==` |
+| OpenCode | 2.3.2 | npm `@opencode/cli` | `sha512-U/DD6X8kgnEFM3VYT7+QN/UJotW++qOxTJtPEUiNzKwu9tNHtAC1jOtup1gpk773j0AFNmMBbLNou4YkdvlRKA==` |
+| Antigravity CLI (`agy`) | 1.5.12 | — | No versioned download with a published hash was found |
+
+Check a download yourself: `shasum -a 256 <file>`, then `spctl -a -vv <the .app inside>`. To compare with an installed copy: `codesign -dvvv <app> 2>&1 | grep CDHash` on both.
+
 ## What was proven, and how
 
 "Live" means a real message crossed between two running apps and the receiving model answered without anyone
