@@ -90,3 +90,15 @@ test("a Claude target reports busy from the session list, and a busy one is not 
   const idle = await sendToSession({ to: "claude:abcdef123456", message: "m", list: list("idle"), transports });
   assert.equal(idle.busy, false);
 });
+
+test("an unconfirmed send whose declared mode differs from the Claude session's mode says so; a recorded one does not", async () => {
+  const { defaultTransports } = await import("../src/send-router.mjs");
+  const list = async () => ({ sessions: [{ app: "claude", id: "abcdef123456", path: "/work/p", status: "idle", mode: "bypassPermissions" }], unavailable: [] });
+  const make = receipt => defaultTransports({ sendClaude: async () => ({ msgId: "m", receipt, note: "generic note" }) });
+  const held = await sendToSession({ to: "claude:abcdef123456", message: "m", fromMode: "prompting", list, transports: make("unconfirmed") });
+  assert.match(held.note, /declared --from-mode prompting.*bypassPermissions/);
+  const same = await sendToSession({ to: "claude:abcdef123456", message: "m", fromMode: "bypass", list, transports: make("unconfirmed") });
+  assert.equal(same.note, "generic note");
+  const fine = await sendToSession({ to: "claude:abcdef123456", message: "m", fromMode: "prompting", list, transports: make("recorded") });
+  assert.equal(fine.note, "generic note");
+});

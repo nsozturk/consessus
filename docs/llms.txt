@@ -62,3 +62,4 @@ Version 1 was tested on one Mac on 2026-11-19. Live: Claude Code ↔ Claude Code
 
 - [Repository](https://github.com/nsozturk/consessus): source and issue tracker
 - [License](https://github.com/nsozturk/consessus/blob/main/LICENSE): MIT
+- Sending to a Claude session from another app: pass `--from-mode` with the mode you really run in. A session that runs without asking (auto-accept, turbo, full access, bypass) is `bypass`; one that asks its owner first is `prompting`. A declared mode that differs from the receiving session's mode is held in the Claude app for the owner's approval. Never declare `bypass` to get past a hold.

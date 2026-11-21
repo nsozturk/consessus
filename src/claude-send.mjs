@@ -20,7 +20,7 @@ export async function insideClaudeSession({ pid = process.pid, list = listLiveSe
   return false;
 }
 
-export const NEEDS_MODE = "This shell is not inside a Claude session. Claude accepts a message from outside only from a registered peer that declares its own approval policy: add --from-mode prompting (you ask before acting) or --from-mode bypass (you act without permission prompts).";
+export const NEEDS_MODE = "This shell is not inside a Claude session. Claude accepts a message from outside only from a registered peer that declares its own approval policy: add --from-mode prompting (you ask your owner before acting) or --from-mode bypass (you act without permission prompts: an auto-accept, turbo or full-access session). State the mode you really run in: the Claude app holds a message whose declared mode differs from the receiving session's mode.";
 
 // Sends to a Claude session and says what its own record shows. Outside a Claude session the sender is first
 // registered as a peer for the length of the send, because a bare frame from there is held or dropped without a word to the sender.
@@ -55,4 +55,13 @@ export async function sendToClaude({ target, message, fromName = "consessus", fr
       : "The session has not recorded the message. It may be held for approval in the Claude app (the sender's mode differs from the session's), or the session does not accept peer messages.";
     return { msgId: sent.msgId, target: sent.target ?? resolved, receipt, via: direct ? "direct" : "registered-peer", ...(note ? { note } : {}) };
   } finally { peer?.cleanup?.(); }
+}
+
+// Claude's rule, as measured: a message whose declared sender mode differs from the receiving session's own mode
+// is held for the owner's approval in the Claude app. Consessus only says so beforehand; it never picks the mode.
+export function modeMismatch(fromMode, sessionMode) {
+  if (fromMode === undefined || typeof sessionMode !== "string" || !sessionMode || sessionMode === "unknown") return undefined;
+  const receiving = sessionMode === "bypassPermissions" ? "bypass" : "prompting";
+  return receiving === fromMode ? undefined
+    : `You declared --from-mode ${fromMode}, and that session runs in ${sessionMode}: the Claude app holds such a message until its owner approves it. Declare the mode you really run in; never declare bypass unless you act without permission prompts.`;
 }

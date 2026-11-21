@@ -4,6 +4,7 @@
 
 ### Changed
 
+- A send to a Claude session that stays unconfirmed now says when the declared `--from-mode` differs from that session's own mode, which is why the Claude app holds it; the docs and the agent rules say which mode a session declares.
 - **A send to a Claude session reports a receipt.** The receipt says what the session's own record shows:
   - `recorded`: Claude Code wrote the message down, as a new turn when the session was idle or attached to the running turn.
   - `unconfirmed`: not written down within 4 seconds. The session is busy and will record it when its current step ends, or the message is held for approval in the Claude app, or the session does not accept peer messages.

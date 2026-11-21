@@ -95,3 +95,13 @@ test("an unconfirmed receipt says why it may be so, and a busy session is not ca
     assert.deepEqual([listener.log.confirms.length, listener.log.registered, listener.log.sends.length], [0, 0, 1]);
   }
 });
+
+test("a declared mode that differs from the session's own mode is named as the reason a message is held", async () => {
+  const { modeMismatch } = await import("../src/claude-send.mjs");
+  assert.match(modeMismatch("prompting", "bypassPermissions"), /declared --from-mode prompting.*runs in bypassPermissions.*holds such a message/);
+  assert.match(modeMismatch("bypass", "default"), /declared --from-mode bypass.*runs in default/);
+  assert.match(modeMismatch("bypass", "acceptEdits"), /never declare bypass unless/);
+  for (const [from, mode] of [["bypass", "bypassPermissions"], ["prompting", "default"], ["prompting", "plan"], [undefined, "default"], ["bypass", "unknown"], ["bypass", undefined], ["bypass", ""]]) {
+    assert.equal(modeMismatch(from, mode), undefined);
+  }
+});

@@ -291,6 +291,7 @@ consessus send --to antigravity:3f2a9c10 --message 'Summarize the open task.' --
 <pre><code>consessus send --to claude:&lt;id&gt; --message &lt;text&gt; --from-mode prompting</code></pre>
   <ul>
     <li><code>--from-mode</code> is the <strong>sender's</strong> own approval policy: <code>prompting</code> means it asks before acting, <code>bypass</code> means it acts without permission prompts. Declare it truthfully.</li>
+    <li>Which one is yours: an agent session that runs without asking (an auto-accept, turbo, full-access or bypass setting) declares <code>bypass</code>; a session that asks its owner before running tools declares <code>prompting</code>. The Claude app delivers a message whose declared mode matches the receiving session's own mode and holds one that differs until the owner approves it there. When that happens the result says so: <code>You declared --from-mode prompting, and that session runs in bypassPermissions</code>. Fix the declaration only if it was wrong; never declare <code>bypass</code> to get past a hold.</li>
     <li>Without it the command stops with an explanation and sends nothing.</li>
     <li>With it, Consessus registers the sender as a peer for the length of the send, sends with that identity, reads the receipt and removes the registration.</li>
     <li>If the declared mode differs from the target session's mode, the Claude app may still hold the message for the owner's approval. That is the app's rule; Consessus reports <code>unconfirmed</code> with the note.</li>

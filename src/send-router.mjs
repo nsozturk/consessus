@@ -8,7 +8,7 @@ import { connectAntigravity, openAntigravityDelivery, readAntigravityReply } fro
 import { openOpencodeDelivery } from "./opencode-delivery.mjs";
 import { readCodexReply } from "./codex-replies.mjs";
 import { readClaudeReply } from "./claude-replies.mjs";
-import { sendToClaude } from "./claude-send.mjs";
+import { modeMismatch, sendToClaude } from "./claude-send.mjs";
 
 // One address space for the four apps: a session id (or a unique prefix of it), optionally "app:id".
 export function resolveTarget(query, sessions, unavailable = []) {
@@ -37,7 +37,9 @@ export const defaultTransports = ({ openOpencode = openOpencodeDelivery, sendCla
     const sent = await sendClaude({ target: row.id, message, fromName, fromMode, status: row.status });
     // The reader finds our own message by its id, so a turn that was already running cannot be mistaken for the answer.
     // A busy session takes the message into its running turn, so there is no turn of our own to read an answer from.
-    return { status: sent.receipt === "recorded" ? "delivered" : "sent", receipt: sent.receipt, busy: row.status === "busy", ...(sent.note ? { note: sent.note } : {}),
+    const mismatch = sent.receipt === "recorded" ? undefined : modeMismatch(fromMode, row.mode);
+    return { status: sent.receipt === "recorded" ? "delivered" : "sent", receipt: sent.receipt, busy: row.status === "busy",
+      ...(mismatch ? { note: mismatch } : sent.note ? { note: sent.note } : {}),
       ...(sent.via === "registered-peer" ? { via: sent.via } : {}),
       ...(row.path ? { readReply: ({ timeoutMs }) => readClaudeReply({ ...session, after: { msgId: sent.msgId }, ...(timeoutMs ? { timeoutMs } : {}) }) } : {}) };
   },

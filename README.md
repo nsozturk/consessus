@@ -518,6 +518,7 @@ consessus send --to claude:<id> --message <text> --from-mode prompting
 ```
 
 - `--from-mode` is the **sender's** own approval policy: `prompting` means it asks before acting, `bypass` means it acts without permission prompts. Declare it truthfully.
+- Which one is yours: an agent session that runs without asking (an auto-accept, turbo, full-access or bypass setting) declares `bypass`; a session that asks its owner before running tools declares `prompting`. The Claude app delivers a message whose declared mode matches the receiving session's own mode and holds one that differs until the owner approves it there. When that happens the result says so: `You declared --from-mode prompting, and that session runs in bypassPermissions`. Fix the declaration only if it was wrong; never declare `bypass` to get past a hold.
 - Without it the command stops with an explanation and sends nothing.
 - With it, Consessus registers the sender as a peer for the length of the send, sends with that identity, reads the receipt and removes the registration.
 - If the declared mode differs from the target session's mode, the Claude app may still hold the message for the owner's approval. That is the app's rule; Consessus reports `unconfirmed` with the note.
