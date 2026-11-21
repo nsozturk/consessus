@@ -36,7 +36,7 @@
   "applicationCategory": "DeveloperApplication",
   "applicationSubCategory": "Command-line tool",
   "operatingSystem": "macOS",
-  "softwareVersion": "1.0.1",
+  "softwareVersion": "1.0.2",
   "softwareRequirements": "Node.js 18 or newer (Codex relay: Node.js 22.13 or newer)",
   "license": "https://opensource.org/licenses/MIT",
   "isAccessibleForFree": true,
@@ -145,7 +145,7 @@
 <div class="scenery" aria-hidden="true"><i class="on drift"></i><i></i></div>
 <header class="top">
   <a class="brand" href="./">Consessus</a>
-  <span class="ver">v1.0.1</span>
+  <span class="ver">v1.0.2</span>
   <span class="spacer"></span>
   <nav aria-label="Site">
     <a href="docs/">Docs</a>
@@ -184,11 +184,9 @@ Also assigned in this room: codex: Write the test for aqueduct.js; antigravity: 
     <!-- hero-flow:static END -->
     </div>
     <div class="pane hero-get">
-<pre data-install aria-label="Install commands"><code>git clone https://github.com/nsozturk/consessus.git
-cd consessus
-npm link          # puts `consessus` on your PATH
-consessus --help</code></pre>
-      <p class="legend">Installed from source; not published on npm. Needs Node.js 18 or newer.</p>
+<pre data-install aria-label="Install commands"><code>npm install -g consessus
+consessus sessions</code></pre>
+      <p class="legend">Or try it without installing: <code>npx consessus sessions</code>. Needs Node.js 18 or newer.</p>
       <div class="cta">
         <a class="btn primary" href="docs/#quick-start">Read the quick start</a>
         <a class="btn" href="https://github.com/nsozturk/consessus">View on GitHub</a>

@@ -106,15 +106,23 @@ No API key, account or network service is added. Your AI apps keep their own acc
 
 ## Install
 
-Consessus is not published on npm. Install it from source:
+Install it from npm:
+
+```bash
+npm install -g consessus
+consessus --help
+consessus doctor  # compare your app versions with the tested ones
+```
+
+To try it without installing, run `npx consessus sessions`.
+
+From source instead:
 
 ```bash
 git clone https://github.com/nsozturk/consessus.git
 cd consessus
 npm test          # optional: local tests, no live accounts
 npm link          # puts `consessus` on your PATH
-consessus --help
-consessus doctor  # compare your app versions with the tested ones
 ```
 
 Without `npm link`, run `node bin/consessus.mjs <command>` from the checkout.

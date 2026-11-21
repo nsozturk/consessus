@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.2
+
+- Published on npm: `npm install -g consessus`, or `npx consessus sessions` to try it without installing. The docs and the site show the npm install first and the source install second. No change in behaviour.
+
 ## 1.0.1 (2026-11-20)
 
 ### Changed

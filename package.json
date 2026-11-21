@@ -1,6 +1,6 @@
 {
   "name": "consessus",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Consessus is a free, open-source CLI for macOS that lets Claude Code, Codex, OpenCode and Antigravity sessions on the same machine message each other and share project rooms.",
   "type": "module",
   "main": "./src/index.mjs",
@@ -11,6 +11,7 @@
   },
   "files": [
     "AGENTS.md",
+    "CHANGELOG.md",
     "CITATION.cff",
     "GLOBAL_AGENT_RULE.md",
     "LICENSE",

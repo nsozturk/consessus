@@ -33,7 +33,7 @@ import {
   openCodexRelay,
 } from "../src/index.mjs";
 
-const VERSION = "1.0.1";
+const VERSION = "1.0.2";
 
 // ANSI Colors
 const RESET = "\x1b[0m";

@@ -127,7 +127,7 @@
 <header class="top">
   <button class="menu" type="button" aria-label="Toggle documentation menu" aria-controls="sidebar" aria-expanded="false">☰</button>
   <a class="brand" href="../">Consessus</a>
-  <span class="ver">v1.0.1</span>
+  <span class="ver">v1.0.2</span>
   <span class="spacer"></span>
   <nav aria-label="Site">
     <a class="opt" href="../">Home</a>
@@ -192,13 +192,15 @@
 
 <section id="install">
   <h2>Install</h2>
-  <p>Consessus is not published on npm. Install it from source. The core needs Node.js 18 or newer; the Codex relay needs Node.js 22.13+ or 24+.</p>
+  <p>Install it from npm. The core needs Node.js 18 or newer; the Codex relay needs Node.js 22.13+ or 24+.</p>
+<pre><code>npm install -g consessus
+consessus --help
+consessus doctor  # compare your app versions with the tested ones</code></pre>
+  <p>To try it without installing, run <code>npx consessus sessions</code>. From source instead:</p>
 <pre><code>git clone https://github.com/nsozturk/consessus.git
 cd consessus
 npm test          # optional: local tests, no live accounts
-npm link          # puts `consessus` on your PATH
-consessus --help
-consessus doctor  # compare your app versions with the tested ones</code></pre>
+npm link          # puts `consessus` on your PATH</code></pre>
   <p>Without <code>npm link</code>, run <code>node bin/consessus.mjs &lt;command&gt;</code> from the checkout.</p>
 </section>
 

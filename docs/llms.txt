@@ -38,7 +38,7 @@ Tagline: Let your AI coding agents talk to each other. Formerly named claude-pee
 
 ## Install and use
 
-Not published on npm. `git clone https://github.com/nsozturk/consessus.git`, `cd consessus`, `npm link`, then `consessus --help`. Core needs Node.js 18+; the Codex relay needs Node.js 22.13+ or 24+. macOS only (Linux not verified, Windows unsupported).
+Install with `npm install -g consessus` (or run once with `npx consessus sessions`), then `consessus --help`. From source: `git clone https://github.com/nsozturk/consessus.git`, `cd consessus`, `npm link`. Core needs Node.js 18+; the Codex relay needs Node.js 22.13+ or 24+. macOS only (Linux not verified, Windows unsupported).
 
 Sessions in different permission modes hold each other's messages; the recipient never sees them until approved. Declare the sender's real mode with `--from-mode prompting|bypass` and never declare `bypass` to get past a hold.
 
